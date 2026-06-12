@@ -3,9 +3,11 @@
   * { margin:0; padding:0; box-sizing:border-box; user-select:none; }
   html,body { width:100%; height:100%; background:transparent; overflow:hidden;
     font-family:'Segoe UI Variable Text','Segoe UI',sans-serif; color:#e9e5de; }
-  .frame { position:fixed; inset:8px; border-radius:22px; overflow:hidden;
-    border:1px solid rgba(255,255,255,.09);
-    background:linear-gradient(165deg, rgba(32,30,28,.94), rgba(20,19,17,.86));
+  .frame { position:fixed; inset:0; border-radius:8px; overflow:hidden;
+    border:1px solid rgba(255,255,255,.11);
+    background:
+      radial-gradient(120% 50% at 50% -15%, rgba(174,206,197,.18), transparent 58%),
+      linear-gradient(170deg, rgba(23,31,33,.95), rgba(18,22,23,.90) 55%, rgba(29,30,22,.88));
     box-shadow:0 20px 70px rgba(0,0,0,.55), inset 0 1px 0 rgba(255,255,255,.06);
     display:flex; flex-direction:column; }
   .frame::before { content:""; position:absolute; inset:0; pointer-events:none; opacity:.045;
@@ -25,7 +27,7 @@
   .scroll::-webkit-scrollbar-thumb { background:rgba(255,255,255,.12); border-radius:4px; }
   .lede { font-size:13.5px; color:rgba(233,229,222,.55); line-height:1.5; margin:2px 2px 18px; }
 
-  .sect { border:1px solid rgba(255,255,255,.07); border-radius:18px;
+  .sect { border:1px solid rgba(255,255,255,.07); border-radius:8px;
     background:rgba(255,255,255,.025); padding:16px 18px 6px; margin-bottom:14px; }
   .sect > h2 { display:flex; align-items:center; gap:9px; font-size:11px; font-weight:600;
     letter-spacing:.13em; text-transform:uppercase; color:rgba(233,229,222,.42);
@@ -34,7 +36,7 @@
     stroke-width:1.6; stroke-linecap:round; stroke-linejoin:round; }
 
   .modes { display:flex; gap:9px; margin-bottom:12px; }
-  .mode { flex:1; padding:14px 13px; border-radius:14px; cursor:pointer;
+  .mode { flex:1; padding:14px 13px; border-radius:8px; cursor:pointer;
     border:1.5px solid rgba(255,255,255,.09); background:rgba(255,255,255,.03);
     transition:border-color .3s, background .3s; }
   .mode:hover { background:rgba(255,255,255,.07); }
@@ -77,7 +79,7 @@
   .info:hover .tip { opacity:1; }
 
   .sample { font-size:13px; color:rgba(233,229,222,.62); font-style:italic; cursor:pointer;
-    padding:10px 14px; border-radius:12px; background:rgba(255,255,255,.03);
+    padding:10px 14px; border-radius:8px; background:rgba(255,255,255,.03);
     border:1px dashed rgba(255,255,255,.14); margin:4px 0 12px;
     transition:background .2s; }
   .sample:hover { background:rgba(255,255,255,.06); }

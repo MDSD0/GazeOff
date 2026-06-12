@@ -28,10 +28,10 @@ struct Settings {
     blink_min: u32,
     posture: bool,
     posture_min: u32,
-    prebreak: bool,  // heads-up before breaks
-    lead_secs: u32,  // how far in advance
-    sound: bool,     // soft chime when a break completes
-    autostart: bool, // launch with Windows
+    prebreak: bool,         // heads-up before breaks
+    lead_secs: u32,         // how far in advance
+    sound: bool,            // soft chime when a break completes
+    autostart: bool,        // launch with Windows
     smart_fullscreen: bool, // hold breaks during fullscreen apps
     cooldown_secs: u32,     // grace period after fullscreen ends
     idle_pause: u32,        // stop counting after N seconds away
@@ -67,6 +67,43 @@ impl Default for Settings {
             hours_end: 24,
             days: 0b0111_1111,
         }
+    }
+}
+
+impl Settings {
+    fn normalized(mut self) -> Self {
+        self.interval_min = self.interval_min.clamp(10, 60);
+        self.short_secs = self.short_secs.clamp(20, 90);
+        self.long_every = self.long_every.clamp(2, 5);
+        self.long_min = self.long_min.clamp(3, 10);
+        self.blink_min = self.blink_min.clamp(5, 30);
+        self.posture_min = self.posture_min.clamp(15, 60);
+        self.lead_secs = match self.lead_secs {
+            30 | 60 | 90 => self.lead_secs,
+            _ => 60,
+        };
+        self.cooldown_secs = match self.cooldown_secs {
+            0 | 30 | 60 | 120 | 300 => self.cooldown_secs,
+            _ => 60,
+        };
+        self.idle_pause = match self.idle_pause {
+            30 | 60 | 120 => self.idle_pause,
+            _ => 60,
+        };
+        self.idle_reset = match self.idle_reset {
+            180 | 300 | 600 => self.idle_reset,
+            _ => 300,
+        };
+        self.hours_start = self.hours_start.min(23);
+        self.hours_end = self.hours_end.clamp(1, 24);
+        self.days &= 0b0111_1111;
+        if self.days == 0 {
+            self.days = Settings::default().days;
+        }
+        if !matches!(self.mode.as_str(), "lenient" | "smart" | "focused") {
+            self.mode = "smart".into();
+        }
+        self
     }
 }
 
@@ -166,7 +203,10 @@ fn idle_secs() -> u64 {
     use windows_sys::Win32::System::SystemInformation::GetTickCount;
     use windows_sys::Win32::UI::Input::KeyboardAndMouse::{GetLastInputInfo, LASTINPUTINFO};
     unsafe {
-        let mut lii = LASTINPUTINFO { cbSize: 8, dwTime: 0 };
+        let mut lii = LASTINPUTINFO {
+            cbSize: 8,
+            dwTime: 0,
+        };
         if GetLastInputInfo(&mut lii) == 0 {
             return 0;
         }
@@ -221,6 +261,81 @@ fn fullscreen_foreground() -> bool {
     }
 }
 
+#[cfg(windows)]
+fn square_window(window: &tauri::WebviewWindow) {
+    use windows_sys::Win32::Graphics::Dwm::{
+        DwmSetWindowAttribute, DWMWA_WINDOW_CORNER_PREFERENCE, DWMWCP_DONOTROUND,
+    };
+
+    if let Ok(hwnd) = window.hwnd() {
+        let pref = DWMWCP_DONOTROUND;
+        unsafe {
+            let _ = DwmSetWindowAttribute(
+                hwnd.0 as _,
+                DWMWA_WINDOW_CORNER_PREFERENCE as u32,
+                &pref as *const _ as _,
+                std::mem::size_of_val(&pref) as u32,
+            );
+        }
+    }
+}
+
+#[cfg(not(windows))]
+fn square_window(_window: &tauri::WebviewWindow) {}
+
+#[cfg(windows)]
+fn current_wallpaper_data_url() -> Option<String> {
+    use base64::Engine as _;
+    use windows_sys::Win32::UI::WindowsAndMessaging::{
+        SystemParametersInfoW, SPI_GETDESKWALLPAPER,
+    };
+
+    let mut buf = [0u16; 32768];
+    let ok = unsafe {
+        SystemParametersInfoW(
+            SPI_GETDESKWALLPAPER,
+            buf.len() as u32,
+            buf.as_mut_ptr() as _,
+            0,
+        )
+    };
+    if ok == 0 {
+        return None;
+    }
+    let len = buf.iter().position(|c| *c == 0).unwrap_or(buf.len());
+    if len == 0 {
+        return None;
+    }
+    let path = std::path::PathBuf::from(String::from_utf16_lossy(&buf[..len]));
+    let bytes = std::fs::read(&path).ok()?;
+    if bytes.len() > 16 * 1024 * 1024 {
+        return None;
+    }
+    let mime = match path
+        .extension()
+        .and_then(|e| e.to_str())
+        .unwrap_or("")
+        .to_ascii_lowercase()
+        .as_str()
+    {
+        "jpg" | "jpeg" => "image/jpeg",
+        "png" => "image/png",
+        "bmp" => "image/bmp",
+        "webp" => "image/webp",
+        _ => "image/jpeg",
+    };
+    Some(format!(
+        "data:{};base64,{}",
+        mime,
+        base64::engine::general_purpose::STANDARD.encode(bytes)
+    ))
+}
+
+#[cfg(not(windows))]
+fn current_wallpaper_data_url() -> Option<String> {
+    None
+}
+
 fn set_autostart(on: bool) {
     use std::os::windows::process::CommandExt;
     const NO_WINDOW: u32 = 0x0800_0000;
@@ -228,8 +343,17 @@ fn set_autostart(on: bool) {
     let key = r"HKCU\Software\Microsoft\Windows\CurrentVersion\Run";
     let _ = if on {
         std::process::Command::new("reg")
-            .args(["add", key, "/v", "gazeOff", "/t", "REG_SZ", "/d",
-                &format!("\"{}\"", exe.display()), "/f"])
+            .args([
+                "add",
+                key,
+                "/v",
+                "gazeOff",
+                "/t",
+                "REG_SZ",
+                "/d",
+                &format!("\"{}\"", exe.display()),
+                "/f",
+            ])
             .creation_flags(NO_WINDOW)
             .output()
     } else {
@@ -257,7 +381,7 @@ fn tray_icon(state: &str, paused: bool) -> Image<'static> {
     let c = (S as f32 - 1.0) / 2.0;
     for y in 0..S {
         for x in 0..S {
-            let d = (((x as f32 - c).powi(2) + (y as f32 - c).powi(2)) as f32).sqrt();
+            let d = ((x as f32 - c).powi(2) + (y as f32 - c).powi(2)).sqrt();
             // soft halo ring + core dot; paused = hollow ring only
             let ring = (1.0 - ((d - 11.5).abs() - 1.2).max(0.0)).clamp(0.0, 1.0) * 0.45;
             let core = if paused {
@@ -345,16 +469,23 @@ fn show_nudge(app: &AppHandle, kind: &str, e: &mut Engine) {
                 mp.y + ms.height as i32 - wh - (60.0 * sf) as i32,
             ));
         }
-        let _ = app.emit("nudge", json!({
-            "kind": kind, "playful": e.s.playful, "state": e.state(), "secs": secs,
-        }));
+        let _ = app.emit(
+            "nudge",
+            json!({
+                "kind": kind, "playful": e.s.playful, "state": e.state(), "secs": secs,
+            }),
+        );
         let _ = w.show();
     }
 }
 
 fn start_break(app: &AppHandle, e: &mut Engine) {
     let long = e.shorts + 1 >= e.s.long_every.max(2) || e.work >= 90 * 60;
-    let dur = if long { e.s.long_min * 60 } else { e.s.short_secs };
+    let dur = if long {
+        e.s.long_min * 60
+    } else {
+        e.s.short_secs
+    };
     e.day.longest = e.day.longest.max(e.work);
     e.brk = Some(Brk { long, dur, t: 0 });
     e.pending = false;
@@ -410,6 +541,7 @@ fn get_settings(eng: State<Eng>) -> Settings {
 #[tauri::command]
 fn set_settings(app: AppHandle, eng: State<Eng>, s: Settings) {
     let mut e = eng.0.lock().unwrap();
+    let s = s.normalized();
     if s.autostart != e.s.autostart {
         set_autostart(s.autostart);
     }
@@ -471,6 +603,11 @@ fn open_settings(app: AppHandle) {
     }
 }
 
+#[tauri::command]
+fn wallpaper_data_url() -> Option<String> {
+    current_wallpaper_data_url()
+}
+
 // ---------- main ----------
 
 fn main() {
@@ -486,7 +623,8 @@ fn main() {
             end_break,
             break_now,
             toggle_pause,
-            open_settings
+            open_settings,
+            wallpaper_data_url
         ])
         .setup(move |app| {
             let handle = app.handle().clone();
@@ -495,51 +633,62 @@ fn main() {
                 load(&handle, &mut e);
                 let (date, _, _) = local_clock();
                 if e.day.date != date {
-                    e.day = Day { date, ..Default::default() };
+                    e.day = Day {
+                        date,
+                        ..Default::default()
+                    };
                 }
             }
 
             // windows (all hidden until needed)
-            let overlay = WebviewWindowBuilder::new(app, "overlay", WebviewUrl::App("overlay.html".into()))
-                .transparent(true)
-                .decorations(false)
-                .always_on_top(true)
-                .skip_taskbar(true)
-                .resizable(false)
-                .visible(false)
-                .build()?;
-            let nudge = WebviewWindowBuilder::new(app, "nudge", WebviewUrl::App("nudge.html".into()))
-                .transparent(true)
-                .decorations(false)
-                .always_on_top(true)
-                .skip_taskbar(true)
-                .resizable(false)
-                .focused(false)
-                .focusable(false)
-                .shadow(false)
-                .inner_size(364.0, 104.0)
-                .visible(false)
-                .build()?;
-            let panel = WebviewWindowBuilder::new(app, "panel", WebviewUrl::App("panel.html".into()))
-                .transparent(true)
-                .decorations(false)
-                .always_on_top(true)
-                .skip_taskbar(true)
-                .resizable(false)
-                .inner_size(324.0, 532.0)
-                .visible(false)
-                .build()?;
-            let settings = WebviewWindowBuilder::new(app, "settings", WebviewUrl::App("settings.html".into()))
-                .transparent(true)
-                .decorations(false)
-                .resizable(false)
-                .inner_size(680.0, 760.0)
-                .center()
-                .visible(false)
-                .build()?;
+            let overlay =
+                WebviewWindowBuilder::new(app, "overlay", WebviewUrl::App("overlay.html".into()))
+                    .transparent(true)
+                    .decorations(false)
+                    .always_on_top(true)
+                    .skip_taskbar(true)
+                    .resizable(false)
+                    .shadow(false)
+                    .visible(false)
+                    .build()?;
+            let nudge =
+                WebviewWindowBuilder::new(app, "nudge", WebviewUrl::App("nudge.html".into()))
+                    .transparent(true)
+                    .decorations(false)
+                    .always_on_top(true)
+                    .skip_taskbar(true)
+                    .resizable(false)
+                    .focused(false)
+                    .focusable(false)
+                    .shadow(false)
+                    .inner_size(364.0, 104.0)
+                    .visible(false)
+                    .build()?;
+            let panel =
+                WebviewWindowBuilder::new(app, "panel", WebviewUrl::App("panel.html".into()))
+                    .transparent(true)
+                    .decorations(false)
+                    .always_on_top(true)
+                    .skip_taskbar(true)
+                    .resizable(false)
+                    .inner_size(324.0, 532.0)
+                    .visible(false)
+                    .build()?;
+            let settings =
+                WebviewWindowBuilder::new(app, "settings", WebviewUrl::App("settings.html".into()))
+                    .transparent(true)
+                    .decorations(false)
+                    .resizable(false)
+                    .inner_size(680.0, 760.0)
+                    .center()
+                    .visible(false)
+                    .build()?;
+            square_window(&overlay);
+            square_window(&nudge);
+            square_window(&panel);
+            square_window(&settings);
 
             // native frost
-            let _ = window_vibrancy::apply_acrylic(&overlay, Some((18, 17, 15, 180)));
             let _ = window_vibrancy::apply_acrylic(&panel, Some((22, 21, 19, 190)));
             let _ = window_vibrancy::apply_acrylic(&settings, Some((22, 21, 19, 200)));
             let _ = window_vibrancy::apply_acrylic(&nudge, Some((22, 21, 19, 190)));
@@ -568,7 +717,8 @@ fn main() {
             let m_resume = MenuItem::with_id(app, "resume", "Resume", true, None::<&str>)?;
             let m_settings = MenuItem::with_id(app, "settings", "Settings", true, None::<&str>)?;
             let m_quit = MenuItem::with_id(app, "quit", "Quit gazeOff", true, None::<&str>)?;
-            let menu = Menu::with_items(app, &[&m_break, &m_pause, &m_resume, &m_settings, &m_quit])?;
+            let menu =
+                Menu::with_items(app, &[&m_break, &m_pause, &m_resume, &m_settings, &m_quit])?;
 
             let eng_menu = engine.clone();
             let _tray = TrayIconBuilder::with_id("main")
@@ -652,7 +802,10 @@ fn main() {
                                 e.streak = 0;
                             }
                         }
-                        e.day = Day { date, ..Default::default() };
+                        e.day = Day {
+                            date,
+                            ..Default::default()
+                        };
                         e.debt = 0;
                         save(&handle, &e);
                     }
@@ -702,7 +855,10 @@ fn main() {
                         }
 
                         let iv = e.interval();
-                        if e.s.prebreak && !e.warned && !e.pending && !fs
+                        if e.s.prebreak
+                            && !e.warned
+                            && !e.pending
+                            && !fs
                             && e.work >= iv.saturating_sub(e.s.lead_secs)
                         {
                             e.warned = true;

@@ -1,18 +1,50 @@
 <!doctype html>
 <html><head><meta charset="utf-8"><style>
   * { margin:0; padding:0; box-sizing:border-box; user-select:none; cursor:default; }
-  html,body { width:100%; height:100%; background:transparent; overflow:hidden;
+  html,body { width:100%; height:100%; background:#070b10; overflow:hidden;
     font-family:'Segoe UI Variable Display','Segoe UI',sans-serif; color:#e9e5de;
-    --acc:#9eb6a8; --accSoft:rgba(158,182,168,.32); --accGlow:rgba(158,182,168,.16); }
+    --acc:#a7c8bb; --accSoft:rgba(167,200,187,.32); --accGlow:rgba(167,200,187,.16);
+    --wallpaper:none; }
   body { opacity:0; transition:opacity 1.2s cubic-bezier(.25,.1,.25,1); }
   body.in { opacity:1; }
 
   /* ---- atmosphere ---- */
-  .veil { position:fixed; inset:0; background:rgba(20,19,17,.56); }
-  .vig  { position:fixed; inset:0;
-    background:radial-gradient(120% 90% at 50% 46%, transparent 40%, rgba(8,7,6,.55) 100%); }
-  .aur { position:fixed; width:60vw; height:60vw; border-radius:50%;
-    filter:blur(90px); opacity:.16; pointer-events:none;
+  .wallpaper { position:fixed; inset:-42px; pointer-events:none;
+    background-image:var(--wallpaper),
+      linear-gradient(180deg, #18263b 0%, #354c67 45%, #e5b987 76%, #24342d 100%);
+    background-size:cover; background-position:center;
+    filter:blur(24px) saturate(1.18) brightness(.72);
+    transform:scale(1.05); }
+  .sky { position:fixed; inset:0; pointer-events:none;
+    background:
+      radial-gradient(70% 54% at 50% 72%, rgba(255,203,148,.27), transparent 64%),
+      linear-gradient(180deg, rgba(6,14,26,.56) 0%, rgba(14,25,37,.38) 40%, rgba(32,29,20,.45) 100%); }
+  .stars { position:fixed; inset:0; pointer-events:none; opacity:.72;
+    background-image:
+      radial-gradient(circle at 12% 18%, rgba(255,255,255,.88) 0 1px, transparent 1.6px),
+      radial-gradient(circle at 28% 30%, rgba(255,255,255,.62) 0 1px, transparent 1.5px),
+      radial-gradient(circle at 44% 15%, rgba(255,255,255,.80) 0 1px, transparent 1.4px),
+      radial-gradient(circle at 62% 24%, rgba(255,255,255,.70) 0 1px, transparent 1.5px),
+      radial-gradient(circle at 79% 13%, rgba(255,255,255,.86) 0 1px, transparent 1.6px),
+      radial-gradient(circle at 89% 34%, rgba(255,255,255,.58) 0 1px, transparent 1.5px);
+    animation:twinkle 8s ease-in-out infinite alternate; }
+  @keyframes twinkle { from { opacity:.42; } to { opacity:.78; } }
+  .horizon { position:fixed; left:-5vw; right:-5vw; bottom:-18vh; height:44vh; pointer-events:none;
+    background:
+      radial-gradient(80% 58% at 50% 3%, rgba(255,218,172,.34), transparent 58%),
+      linear-gradient(180deg, rgba(255,214,166,.22), rgba(20,34,30,.58) 42%, rgba(6,10,10,.86));
+    filter:blur(10px); }
+  .clouds { position:fixed; left:-10vw; right:-10vw; bottom:7vh; height:24vh; pointer-events:none;
+    background:
+      radial-gradient(30vw 11vh at 18% 58%, rgba(238,243,236,.22), transparent 68%),
+      radial-gradient(36vw 13vh at 46% 45%, rgba(238,243,236,.18), transparent 70%),
+      radial-gradient(30vw 11vh at 76% 60%, rgba(238,243,236,.20), transparent 70%);
+    filter:blur(20px); opacity:.92; animation:cloudDrift 72s ease-in-out infinite alternate; }
+  @keyframes cloudDrift { to { transform:translateX(5vw); } }
+  .vig  { position:fixed; inset:0; pointer-events:none;
+    background:radial-gradient(120% 90% at 50% 46%, transparent 38%, rgba(3,5,8,.66) 100%); }
+  .aur { position:fixed; width:62vw; height:62vw; border-radius:50%;
+    filter:blur(92px); opacity:.18; pointer-events:none;
     transition:background 3s ease; }
   .aur.a { top:-22vw; left:-14vw;
     background:radial-gradient(circle, var(--accGlow), transparent 65%);
@@ -22,7 +54,7 @@
     animation:driftB 58s ease-in-out infinite alternate; }
   @keyframes driftA { from { transform:translate(0,0) scale(1); } to { transform:translate(9vw,6vh) scale(1.15); } }
   @keyframes driftB { from { transform:translate(0,0) scale(1.1); } to { transform:translate(-7vw,-5vh) scale(.95); } }
-  .grain { position:fixed; inset:0; pointer-events:none; opacity:.05; mix-blend-mode:overlay;
+  .grain { position:fixed; inset:0; pointer-events:none; opacity:.055; mix-blend-mode:overlay;
     background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E"); }
   .tint { position:fixed; inset:0; pointer-events:none; opacity:0; transition:opacity 2.5s ease; }
   .tint.accumulating { background:radial-gradient(80% 80% at 50% 60%, rgba(214,184,138,.10), transparent 75%); opacity:1; }
@@ -38,24 +70,35 @@
   body.in .sub     { animation-delay:.46s; }
   @keyframes rise { to { opacity:1; transform:none; } }
 
-  .orbwrap { position:relative; width:264px; height:264px; margin-bottom:54px; }
-  .halo { position:absolute; inset:-40px; border-radius:50%;
-    background:radial-gradient(circle, var(--accGlow), transparent 62%);
-    filter:blur(30px); transition:background 3s ease;
-    animation:breathe 7s ease-in-out infinite; }
-  .core { position:absolute; inset:58px; border-radius:50%;
+  .orbwrap { position:relative; width:286px; height:286px; margin-bottom:54px; }
+  .halo { position:absolute; inset:-46px; border-radius:50%;
+    background:radial-gradient(circle, var(--accGlow), transparent 64%);
+    filter:blur(32px); transition:background 3s ease; animation:breathe 7s ease-in-out infinite; }
+  .core { position:absolute; inset:58px; border-radius:50%; overflow:hidden;
+    border:1px solid rgba(255,255,255,.18);
     background:
-      radial-gradient(circle at 36% 30%, rgba(255,252,245,.34), rgba(255,252,245,.05) 58%, transparent 72%),
-      radial-gradient(circle at 64% 74%, var(--accSoft), transparent 70%),
-      radial-gradient(circle, rgba(255,255,255,.05), rgba(255,255,255,.015) 75%);
-    border:1px solid rgba(255,255,255,.10);
-    box-shadow:inset 0 1px 18px rgba(255,255,255,.08), 0 22px 60px rgba(0,0,0,.35);
+      radial-gradient(70% 55% at 50% 72%, rgba(255,210,150,.38), transparent 68%),
+      linear-gradient(180deg, rgba(15,37,61,.78), rgba(42,71,82,.42) 52%, rgba(220,174,111,.28) 72%, rgba(15,34,29,.72));
+    box-shadow:inset 0 1px 22px rgba(255,255,255,.13), 0 22px 70px rgba(0,0,0,.28);
     animation:breathe 7s ease-in-out infinite;
     display:flex; flex-direction:column; align-items:center; justify-content:center; gap:3px; }
-  @keyframes breathe { 0%,100% { transform:scale(1); } 50% { transform:scale(1.055); } }
-  .time { font-size:30px; font-weight:200; font-variant-numeric:tabular-nums;
+  .core::before { content:""; position:absolute; inset:0;
+    background:
+      radial-gradient(circle at 30% 22%, rgba(255,255,255,.9) 0 1px, transparent 1.5px),
+      radial-gradient(circle at 68% 18%, rgba(255,255,255,.72) 0 1px, transparent 1.5px),
+      linear-gradient(110deg, transparent 12%, rgba(135,227,195,.16) 36%, rgba(133,167,233,.12) 50%, transparent 72%);
+    animation:aurora 12s ease-in-out infinite alternate; }
+  .core::after { content:""; position:absolute; left:-18%; right:-18%; bottom:18%; height:28%;
+    background:
+      radial-gradient(44% 62% at 34% 70%, rgba(237,244,237,.30), transparent 70%),
+      radial-gradient(50% 70% at 68% 58%, rgba(237,244,237,.22), transparent 72%);
+    filter:blur(10px); animation:cloudDrift 28s ease-in-out infinite alternate; }
+  @keyframes aurora { from { transform:translateX(-8%) skewX(-8deg); opacity:.55; }
+    to { transform:translateX(8%) skewX(10deg); opacity:.95; } }
+  @keyframes breathe { 0%,100% { transform:scale(1); } 50% { transform:scale(1.045); } }
+  .time { position:relative; z-index:1; font-size:30px; font-weight:200; font-variant-numeric:tabular-nums;
     letter-spacing:.04em; color:rgba(240,237,230,.92); }
-  .kind { font-size:10px; font-weight:600; letter-spacing:.22em; text-transform:uppercase;
+  .kind { position:relative; z-index:1; font-size:10px; font-weight:600; letter-spacing:.22em; text-transform:uppercase;
     color:rgba(233,229,222,.40); }
   .orbwrap svg { position:absolute; inset:0; transform:rotate(-90deg); overflow:visible; }
   .track { fill:none; stroke:rgba(255,255,255,.09); stroke-width:1.5; }
@@ -63,7 +106,7 @@
     filter:drop-shadow(0 0 6px var(--accSoft));
     transition:stroke-dashoffset 1s linear, stroke 2s ease; }
 
-  .msg { font-size:46px; font-weight:200; letter-spacing:-.01em; text-align:center;
+  .msg { font-size:46px; font-weight:230; letter-spacing:0; text-align:center;
     max-width:780px; line-height:1.22; padding:0 40px;
     text-shadow:0 2px 30px rgba(0,0,0,.4); }
   .sub { margin-top:20px; font-size:15px; font-weight:400; color:rgba(233,229,222,.50);
@@ -71,7 +114,7 @@
 
   .actions { position:fixed; bottom:60px; left:0; right:0; display:flex; justify-content:center; }
   button { font:inherit; font-size:13.5px; color:rgba(233,229,222,.60);
-    background:rgba(255,255,255,.06); border:1px solid rgba(255,255,255,.13);
+    background:rgba(255,255,255,.08); border:1px solid rgba(255,255,255,.16);
     backdrop-filter:blur(6px); border-radius:999px; padding:11px 28px;
     opacity:0; pointer-events:none;
     transition:opacity 1.4s ease, background .3s ease, color .3s ease, border-color .3s; }
@@ -83,7 +126,11 @@
     opacity:.25; transform:scale(.9); }
 </style></head>
 <body>
-  <div class="veil"></div>
+  <div class="wallpaper"></div>
+  <div class="sky"></div>
+  <div class="stars"></div>
+  <div class="horizon"></div>
+  <div class="clouds"></div>
   <div class="aur a"></div><div class="aur b"></div>
   <div class="vig"></div><div class="grain"></div>
   <div class="tint" id="tint"></div>
@@ -205,6 +252,9 @@ function render(s) {
 
 listen("snap", e => render(e.payload));
 invoke("snapshot").then(render);
+invoke("wallpaper_data_url").then(url => {
+  if (url) document.body.style.setProperty("--wallpaper", `url("${url}")`);
+}).catch(() => {});
 addEventListener("keydown", e => { if (e.key === "Escape") invoke("skip_break"); });
 addEventListener("contextmenu", e => e.preventDefault());
 </script>
