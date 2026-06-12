@@ -1,0 +1,155 @@
+<!doctype html>
+<html><head><meta charset="utf-8"><style>
+  * { margin:0; padding:0; box-sizing:border-box; user-select:none; }
+  html,body { width:100%; height:100%; background:transparent; overflow:hidden;
+    font-family:'Segoe UI Variable Text','Segoe UI',sans-serif; color:#e9e5de;
+    --acc:#9eb6a8; --accSoft:rgba(158,182,168,.22); }
+  .card { position:fixed; inset:8px; border-radius:22px; padding:20px 20px 18px;
+    border:1px solid rgba(255,255,255,.09);
+    background:linear-gradient(160deg, rgba(32,30,28,.92), rgba(20,19,17,.84));
+    box-shadow:0 16px 56px rgba(0,0,0,.5), inset 0 1px 0 rgba(255,255,255,.06);
+    display:flex; flex-direction:column; overflow:hidden; }
+  .card::before { content:""; position:absolute; inset:0; pointer-events:none; opacity:.05;
+    mix-blend-mode:overlay;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E"); }
+  .glow { position:absolute; top:-70px; left:50%; transform:translateX(-50%);
+    width:280px; height:170px; border-radius:50%; filter:blur(50px);
+    background:radial-gradient(circle, var(--accSoft), transparent 70%);
+    transition:background 2s ease; pointer-events:none; }
+
+  .head { display:flex; align-items:center; gap:8px; z-index:1; }
+  .brand { font-family:'Segoe UI Variable Display','Segoe UI',sans-serif;
+    font-size:15px; font-weight:350; letter-spacing:.02em; color:rgba(233,229,222,.45); flex:1; }
+  .brand b { font-weight:600; color:rgba(233,229,222,.85); }
+  .chip { font-size:10px; font-weight:600; letter-spacing:.14em; text-transform:uppercase;
+    color:rgba(233,229,222,.5); border:1px solid rgba(255,255,255,.12);
+    border-radius:999px; padding:4px 10px; background:rgba(255,255,255,.04); }
+
+  .hero { display:flex; align-items:center; gap:18px; margin:22px 0 6px; z-index:1; }
+  .ringwrap { position:relative; width:96px; height:96px; flex:none; }
+  .ringwrap svg { position:absolute; inset:0; transform:rotate(-90deg); }
+  .rtrack { fill:none; stroke:rgba(255,255,255,.09); stroke-width:3; }
+  .rprog { fill:none; stroke:var(--acc); stroke-width:3; stroke-linecap:round;
+    filter:drop-shadow(0 0 5px var(--accSoft));
+    transition:stroke-dashoffset 1s linear, stroke 1.5s ease; }
+  .rmid { position:absolute; inset:0; display:flex; flex-direction:column;
+    align-items:center; justify-content:center; gap:1px; }
+  .rnum { font-size:22px; font-weight:250; font-variant-numeric:tabular-nums; line-height:1; }
+  .rlab { font-size:9px; font-weight:600; letter-spacing:.16em; text-transform:uppercase;
+    color:rgba(233,229,222,.4); }
+  .hcol { flex:1; min-width:0; }
+  .word { font-size:19px; font-weight:350; display:flex; align-items:center; gap:9px; }
+  .dot { width:9px; height:9px; border-radius:50%; background:var(--acc); flex:none;
+    box-shadow:0 0 0 5px var(--accSoft); animation:pulse 4s ease-in-out infinite; }
+  @keyframes pulse { 0%,100%{transform:scale(1)} 50%{transform:scale(1.25)} }
+  .hsub { font-size:12.5px; color:rgba(233,229,222,.5); margin-top:6px; line-height:1.4; }
+
+  .lab { font-size:10px; font-weight:600; letter-spacing:.14em; text-transform:uppercase;
+    color:rgba(233,229,222,.35); margin:18px 2px 8px; z-index:1; }
+  .spark { display:flex; align-items:flex-end; gap:4px; height:46px; padding:8px 10px 6px;
+    border-radius:14px; background:rgba(255,255,255,.04);
+    border:1px solid rgba(255,255,255,.07); z-index:1; }
+  .spark .bar { flex:1; max-width:14px; border-radius:3px 3px 1px 1px; min-height:4px;
+    background:rgba(158,182,168,.65); }
+  .spark .bar.miss { background:rgba(201,130,112,.55); }
+  .spark .empty { font-size:11.5px; color:rgba(233,229,222,.35); align-self:center; margin:auto; }
+
+  .stats { display:flex; gap:7px; margin-top:14px; z-index:1; }
+  .stat { flex:1; text-align:center; padding:11px 2px 9px; border-radius:13px;
+    background:rgba(255,255,255,.04); border:1px solid rgba(255,255,255,.07); }
+  .stat .n { font-size:19px; font-weight:300; font-variant-numeric:tabular-nums; }
+  .stat .l { font-size:9.5px; color:rgba(233,229,222,.42); margin-top:3px;
+    letter-spacing:.06em; text-transform:uppercase; }
+
+  .btns { display:flex; flex-direction:column; gap:8px; margin-top:auto; z-index:1; }
+  .split { display:flex; gap:8px; }
+  .split button { flex:1; }
+  button { font:inherit; font-size:13.5px; cursor:pointer; padding:11px;
+    border-radius:13px; border:1px solid rgba(255,255,255,.10);
+    background:rgba(255,255,255,.06); color:rgba(233,229,222,.85); text-align:center;
+    transition:background .2s, color .2s; }
+  button:hover { background:rgba(255,255,255,.13); color:#f2efe9; }
+  button.primary { background:rgba(238,234,227,.92); color:#1c1b19; border-color:transparent;
+    font-weight:500; }
+  button.primary:hover { background:#f5f2ec; color:#11100e; }
+</style></head>
+<body>
+  <div class="card">
+    <div class="glow"></div>
+    <div class="head">
+      <div class="brand">gaze<b>Off</b></div>
+      <div class="chip" id="chip"></div>
+    </div>
+    <div class="hero">
+      <div class="ringwrap">
+        <svg viewBox="0 0 96 96">
+          <circle class="rtrack" cx="48" cy="48" r="44"/>
+          <circle class="rprog" id="rprog" cx="48" cy="48" r="44"
+            stroke-dasharray="276.5" stroke-dashoffset="276.5"/>
+        </svg>
+        <div class="rmid"><div class="rnum" id="rnum"></div><div class="rlab" id="rlab">min</div></div>
+      </div>
+      <div class="hcol">
+        <div class="word"><span class="dot"></span><span id="word"></span></div>
+        <div class="hsub" id="hsub"></div>
+      </div>
+    </div>
+    <div class="lab">Today's sessions</div>
+    <div class="spark" id="spark"></div>
+    <div class="stats">
+      <div class="stat"><div class="n" id="taken">0</div><div class="l">breaks</div></div>
+      <div class="stat"><div class="n" id="skipped">0</div><div class="l">skipped</div></div>
+      <div class="stat"><div class="n" id="longest">0m</div><div class="l">longest</div></div>
+      <div class="stat"><div class="n" id="streak">0</div><div class="l">streak</div></div>
+    </div>
+    <div class="btns">
+      <button class="primary" onclick="invoke('break_now')">Take a break now</button>
+      <div class="split">
+        <button id="pause" onclick="invoke('toggle_pause')">Pause 1 h</button>
+        <button onclick="invoke('open_settings')">Settings</button>
+      </div>
+    </div>
+  </div>
+<script>
+const { invoke } = window.__TAURI__.core;
+const { listen } = window.__TAURI__.event;
+const WORD = { clear:"All clear", accumulating:"Strain building", due:"Break due" };
+const ACC = { clear:["#9eb6a8","rgba(158,182,168,.22)"],
+  accumulating:["#d6b88a","rgba(214,184,138,.22)"],
+  due:["#c98270","rgba(201,130,112,.22)"] };
+const RC = 276.5;
+function render(s) {
+  const [acc, soft] = s.paused ? ["#a2a09c","rgba(162,160,156,.18)"] : (ACC[s.state] || ACC.clear);
+  document.body.style.setProperty("--acc", acc);
+  document.body.style.setProperty("--accSoft", soft);
+  document.getElementById("chip").textContent =
+    s.mode === "smart" ? "smart break" : s.mode;
+  document.getElementById("word").textContent = s.paused ? "Paused" : (WORD[s.state] || "");
+  const m = Math.max(1, Math.round(s.next_in / 60));
+  document.getElementById("rnum").textContent = s.brk ? "—" : m;
+  document.getElementById("rlab").textContent = s.brk ? "break" : "min left";
+  document.getElementById("rprog").style.strokeDashoffset =
+    RC * (s.interval ? Math.max(0, s.next_in) / s.interval : 1);
+  document.getElementById("hsub").textContent =
+    s.paused ? "Breaks are resting. You should too."
+    : s.brk ? "On a break right now."
+    : s.debt > 0 ? `${s.debt} skipped recently — the next one matters more.`
+    : `Next break in about ${m} min.`;
+  const sp = document.getElementById("spark");
+  const ses = (s.day.sessions || []).slice(-16);
+  sp.innerHTML = ses.length === 0
+    ? '<div class="empty">Sessions will appear here as the day unfolds.</div>'
+    : ses.map(([mins, ok]) =>
+        `<div class="bar${ok ? "" : " miss"}" style="height:${4 + Math.min(mins,60)/60*34}px" title="${mins} min"></div>`
+      ).join("");
+  document.getElementById("taken").textContent = s.day.taken;
+  document.getElementById("skipped").textContent = s.day.skipped;
+  document.getElementById("longest").textContent = Math.round(s.day.longest / 60) + "m";
+  document.getElementById("streak").textContent = s.streak;
+  document.getElementById("pause").textContent = s.paused ? "Resume" : "Pause 1 h";
+}
+listen("snap", e => render(e.payload));
+invoke("snapshot").then(render);
+addEventListener("contextmenu", e => e.preventDefault());
+</script>
+</body></html>

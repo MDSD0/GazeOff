@@ -1,0 +1,93 @@
+<!doctype html>
+<html><head><meta charset="utf-8"><style>
+  * { margin:0; padding:0; box-sizing:border-box; user-select:none; }
+  html,body { width:100%; height:100%; background:transparent; overflow:hidden;
+    font-family:'Segoe UI Variable Text','Segoe UI',sans-serif; color:#e9e5de;
+    --acc:#9eb6a8; --accSoft:rgba(158,182,168,.25); }
+  .pill { position:fixed; inset:6px; border-radius:19px; overflow:hidden;
+    border:1px solid rgba(255,255,255,.10);
+    background:linear-gradient(135deg, rgba(34,32,30,.94), rgba(22,21,19,.86));
+    box-shadow:0 10px 40px rgba(0,0,0,.45), inset 0 1px 0 rgba(255,255,255,.06);
+    display:flex; align-items:center; gap:14px; padding:0 18px 0 16px;
+    opacity:0; transform:translateY(8px);
+    transition:opacity .8s cubic-bezier(.22,.8,.3,1), transform .8s cubic-bezier(.22,.8,.3,1); }
+  .pill.in { opacity:1; transform:none; }
+  .pill::before { content:""; position:absolute; left:0; top:14px; bottom:14px; width:3px;
+    border-radius:0 3px 3px 0; background:var(--acc); opacity:.8;
+    box-shadow:0 0 12px var(--accSoft); }
+  .glyph { width:38px; height:38px; flex:none; border-radius:12px;
+    background:rgba(255,255,255,.05); border:1px solid rgba(255,255,255,.08);
+    display:flex; align-items:center; justify-content:center; }
+  .glyph svg { width:20px; height:20px; stroke:var(--acc); fill:none;
+    stroke-width:1.6; stroke-linecap:round; stroke-linejoin:round; }
+  .col { flex:1; min-width:0; }
+  .ttl { font-size:10px; font-weight:600; letter-spacing:.18em; text-transform:uppercase;
+    color:rgba(233,229,222,.38); margin-bottom:3px; }
+  .txt { font-size:13.5px; line-height:1.35; color:rgba(233,229,222,.88); }
+  button { font:inherit; font-size:12.5px; flex:none; cursor:pointer;
+    color:rgba(233,229,222,.78); background:rgba(255,255,255,.07);
+    border:1px solid rgba(255,255,255,.14); border-radius:999px; padding:7px 15px;
+    transition:background .2s, color .2s; }
+  button:hover { background:rgba(255,255,255,.16); color:#f2efe9; }
+  button.hidden { display:none; }
+  .fuse { position:absolute; bottom:0; left:0; height:2px; width:100%;
+    background:linear-gradient(90deg, var(--acc), transparent);
+    opacity:.45; transform-origin:left; }
+  .fuse.run { animation:burn linear forwards; }
+  @keyframes burn { from { transform:scaleX(1); } to { transform:scaleX(0); } }
+</style></head>
+<body>
+  <div class="pill" id="pill">
+    <div class="glyph" id="glyph"></div>
+    <div class="col"><div class="ttl" id="ttl"></div><div class="txt" id="txt"></div></div>
+    <button id="now" class="hidden">Now</button>
+    <div class="fuse" id="fuse"></div>
+  </div>
+<script>
+const { invoke } = window.__TAURI__.core;
+const { listen } = window.__TAURI__.event;
+const COPY = {
+  calm: {
+    prebreak: ["A break is coming in a minute.","Good time to find a stopping point.","One minute to a short rest."],
+    blink: ["Blink slowly. Twice.","Close your eyes for one breath.","A few full blinks. Let them rest a second."],
+    posture: ["Drop your shoulders. Unclench your jaw.","Sit tall. Feet flat.","Roll your shoulders back, once."]
+  },
+  playful: {
+    prebreak: ["Break incoming in a min. Wrap the thought.","60 seconds till touch-grass o'clock.","Find a save point. Break soon."],
+    blink: ["Blink. No, actually blink. Full blink.","Your blink rate is in shambles. Fix it."],
+    posture: ["Unshrimp yourself.","Shoulders are not earrings. Drop them.","Posture check. You know what you did."]
+  }
+};
+const TTL = { prebreak:"Heads-up", blink:"Blink", posture:"Posture" };
+const GLYPH = {
+  // a resting eye
+  blink: '<svg viewBox="0 0 24 24"><path d="M3 12c2.5 3.8 6 5.6 9 5.6s6.5-1.8 9-5.6"/><path d="M7 15.5l-1.6 2M12 17.6V20M17 15.5l1.6 2"/></svg>',
+  // a straightening spine
+  posture: '<svg viewBox="0 0 24 24"><path d="M12 3.5v17"/><circle cx="12" cy="5.5" r="1.6"/><path d="M8.5 10h7M9.5 14h5M10.5 18h3"/></svg>',
+  // a filling ring
+  prebreak: '<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5" opacity=".35"/><path d="M12 3.5a8.5 8.5 0 0 1 8.5 8.5"/><path d="M12 8v4.5l3 2"/></svg>'
+};
+const ACC = { clear:["#9eb6a8","rgba(158,182,168,.25)"],
+  accumulating:["#d6b88a","rgba(214,184,138,.25)"],
+  due:["#c98270","rgba(201,130,112,.25)"] };
+const pick = a => a[Math.floor(Math.random()*a.length)];
+listen("nudge", e => {
+  const { kind, playful, state, secs } = e.payload;
+  const [acc, soft] = ACC[state] || ACC.clear;
+  document.body.style.setProperty("--acc", acc);
+  document.body.style.setProperty("--accSoft", soft);
+  document.getElementById("ttl").textContent = TTL[kind] || "";
+  document.getElementById("txt").textContent = pick(COPY[playful ? "playful" : "calm"][kind]);
+  document.getElementById("glyph").innerHTML = GLYPH[kind] || GLYPH.prebreak;
+  document.getElementById("now").className = kind === "prebreak" ? "" : "hidden";
+  const fuse = document.getElementById("fuse");
+  fuse.className = "fuse"; void fuse.offsetWidth;
+  fuse.style.animationDuration = (secs || 8) + "s";
+  fuse.className = "fuse run";
+  const p = document.getElementById("pill");
+  p.classList.remove("in"); void p.offsetWidth; p.classList.add("in");
+});
+document.getElementById("now").onclick = () => invoke("break_now");
+addEventListener("contextmenu", e => e.preventDefault());
+</script>
+</body></html>

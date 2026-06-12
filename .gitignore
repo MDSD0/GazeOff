@@ -1,0 +1,9 @@
+/target/
+/.vscode/
+/.idea/
+*.pdb
+*.exe
+*.d
+*.log
+*.tmp
+Thumbs.db

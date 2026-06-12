@@ -1,0 +1,303 @@
+<!doctype html>
+<html><head><meta charset="utf-8"><style>
+  * { margin:0; padding:0; box-sizing:border-box; user-select:none; }
+  html,body { width:100%; height:100%; background:transparent; overflow:hidden;
+    font-family:'Segoe UI Variable Text','Segoe UI',sans-serif; color:#e9e5de; }
+  .frame { position:fixed; inset:8px; border-radius:22px; overflow:hidden;
+    border:1px solid rgba(255,255,255,.09);
+    background:linear-gradient(165deg, rgba(32,30,28,.94), rgba(20,19,17,.86));
+    box-shadow:0 20px 70px rgba(0,0,0,.55), inset 0 1px 0 rgba(255,255,255,.06);
+    display:flex; flex-direction:column; }
+  .frame::before { content:""; position:absolute; inset:0; pointer-events:none; opacity:.045;
+    mix-blend-mode:overlay;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E"); }
+
+  .bar { display:flex; align-items:center; padding:18px 24px 12px; flex:none; z-index:1; }
+  .brand { font-family:'Segoe UI Variable Display','Segoe UI',sans-serif;
+    font-size:15px; font-weight:350; color:rgba(233,229,222,.45); flex:1; }
+  .brand b { font-weight:600; color:rgba(233,229,222,.8); }
+  .x { width:30px; height:30px; border-radius:50%; border:none; cursor:pointer;
+    background:rgba(255,255,255,.07); color:rgba(233,229,222,.6); font-size:14px; line-height:1; }
+  .x:hover { background:rgba(255,255,255,.14); color:#f2efe9; }
+
+  .scroll { overflow-y:auto; padding:0 24px 26px; z-index:1; }
+  .scroll::-webkit-scrollbar { width:8px; }
+  .scroll::-webkit-scrollbar-thumb { background:rgba(255,255,255,.12); border-radius:4px; }
+  .lede { font-size:13.5px; color:rgba(233,229,222,.55); line-height:1.5; margin:2px 2px 18px; }
+
+  .sect { border:1px solid rgba(255,255,255,.07); border-radius:18px;
+    background:rgba(255,255,255,.025); padding:16px 18px 6px; margin-bottom:14px; }
+  .sect > h2 { display:flex; align-items:center; gap:9px; font-size:11px; font-weight:600;
+    letter-spacing:.13em; text-transform:uppercase; color:rgba(233,229,222,.42);
+    margin-bottom:10px; }
+  .sect > h2 svg { width:15px; height:15px; stroke:rgba(233,229,222,.45); fill:none;
+    stroke-width:1.6; stroke-linecap:round; stroke-linejoin:round; }
+
+  .modes { display:flex; gap:9px; margin-bottom:12px; }
+  .mode { flex:1; padding:14px 13px; border-radius:14px; cursor:pointer;
+    border:1.5px solid rgba(255,255,255,.09); background:rgba(255,255,255,.03);
+    transition:border-color .3s, background .3s; }
+  .mode:hover { background:rgba(255,255,255,.07); }
+  .mode.sel { border-color:rgba(158,182,168,.6); background:rgba(158,182,168,.08); }
+  .mode .t { font-size:14px; font-weight:500; margin-bottom:4px; }
+  .mode .d { font-size:11.5px; color:rgba(233,229,222,.55); line-height:1.4; }
+
+  .row { display:flex; align-items:center; gap:10px; padding:12px 0;
+    border-bottom:1px solid rgba(255,255,255,.05); min-height:50px; }
+  .sect .row:last-child { border-bottom:none; }
+  .row .label { flex:1; font-size:13.5px; }
+  .row .hint { font-size:11.5px; color:rgba(233,229,222,.42); margin-top:2px; line-height:1.35; }
+  .val { font-size:12.5px; color:rgba(233,229,222,.55); font-variant-numeric:tabular-nums;
+    min-width:62px; text-align:right; }
+  input[type=range] { width:150px; accent-color:#8aa294; }
+  select { font:inherit; font-size:12.5px; border:1px solid rgba(255,255,255,.14);
+    border-radius:9px; padding:5px 8px; background:rgba(35,33,31,.95); color:#e9e5de; }
+
+  .switch { position:relative; width:42px; height:24px; flex:none; cursor:pointer; }
+  .switch input { opacity:0; width:0; height:0; }
+  .knob { position:absolute; inset:0; border-radius:999px; background:rgba(255,255,255,.13);
+    transition:background .25s; }
+  .knob::after { content:""; position:absolute; top:3px; left:3px; width:18px; height:18px;
+    border-radius:50%; background:#cfcabf; box-shadow:0 1px 4px rgba(0,0,0,.35);
+    transition:transform .25s cubic-bezier(.4,0,.2,1), background .25s; }
+  .switch input:checked + .knob { background:#7e9486; }
+  .switch input:checked + .knob::after { transform:translateX(18px); background:#fff; }
+
+  .info { position:relative; width:17px; height:17px; flex:none; border-radius:50%;
+    border:1px solid rgba(233,229,222,.28); color:rgba(233,229,222,.5);
+    font-size:10.5px; font-style:italic; font-family:Georgia,serif;
+    display:inline-flex; align-items:center; justify-content:center; cursor:help; }
+  .info .tip { position:absolute; bottom:24px; right:-10px; width:280px; padding:11px 13px;
+    border-radius:12px; font-style:normal;
+    font-family:'Segoe UI Variable Text','Segoe UI',sans-serif;
+    font-size:12px; line-height:1.5; color:rgba(233,229,222,.9); text-align:left;
+    background:rgba(40,38,35,.98); border:1px solid rgba(255,255,255,.12);
+    box-shadow:0 10px 36px rgba(0,0,0,.55);
+    opacity:0; pointer-events:none; transition:opacity .3s ease; z-index:9; }
+  .info:hover .tip { opacity:1; }
+
+  .sample { font-size:13px; color:rgba(233,229,222,.62); font-style:italic; cursor:pointer;
+    padding:10px 14px; border-radius:12px; background:rgba(255,255,255,.03);
+    border:1px dashed rgba(255,255,255,.14); margin:4px 0 12px;
+    transition:background .2s; }
+  .sample:hover { background:rgba(255,255,255,.06); }
+  .sample::after { content:"  ↻"; opacity:.4; font-style:normal; font-size:11px; }
+
+  .days { display:flex; gap:6px; }
+  .day { width:34px; height:30px; border-radius:9px; font-size:11px; font-weight:600;
+    display:flex; align-items:center; justify-content:center; cursor:pointer;
+    border:1px solid rgba(255,255,255,.10); background:rgba(255,255,255,.03);
+    color:rgba(233,229,222,.45); transition:all .2s; }
+  .day.on { background:rgba(158,182,168,.30); border-color:rgba(158,182,168,.75);
+    color:#eef4f0; box-shadow:0 0 10px rgba(158,182,168,.18); }
+</style></head>
+<body>
+<div class="frame">
+  <div class="bar" data-tauri-drag-region>
+    <div class="brand" data-tauri-drag-region>gaze<b>Off</b> &nbsp;·&nbsp; settings</div>
+    <button class="x" onclick="closeWin()">✕</button>
+  </div>
+  <div class="scroll">
+    <div class="lede">A few choices. The defaults are already good — change only what you feel.</div>
+
+    <div class="sect">
+      <h2><svg viewBox="0 0 24 24"><path d="M12 3l7 4v5c0 4.5-3 7.5-7 9-4-1.5-7-4.5-7-9V7z"/></svg>Firmness</h2>
+      <div class="modes" id="modes">
+        <div class="mode" data-mode="lenient"><div class="t">Lenient</div>
+          <div class="d">Color and soft nudges only. Skipping is always allowed.</div></div>
+        <div class="mode" data-mode="smart"><div class="t">Smart Break</div>
+          <div class="d">Escalates gently as breaks are skipped. Recommended.</div></div>
+        <div class="mode" data-mode="focused"><div class="t">Focused</div>
+          <div class="d">Breaks cannot be skipped. For when you mean it.</div></div>
+      </div>
+      <div class="row" id="forceRow">
+        <div class="label">Hold firm after three skipped breaks
+          <div class="hint">The next break can't be skipped — it can still end early.</div></div>
+        <div class="info">i<span class="tip">Several consecutive skipped breaks across a long session is a different physiological situation than one. Escalation only happens when strain has genuinely accumulated.</span></div>
+        <label class="switch"><input type="checkbox" id="force_due"><span class="knob"></span></label>
+      </div>
+    </div>
+
+    <div class="sect">
+      <h2><svg viewBox="0 0 24 24"><path d="M4 17c2-6 5-9 8-9s6 3 8 9M9 8c.8-1.8 1.8-3 3-3s2.2 1.2 3 3"/></svg>Voice</h2>
+      <div class="row">
+        <div class="label">Playful mode
+          <div class="hint">Same app, more internet. Off by default.</div></div>
+        <label class="switch"><input type="checkbox" id="playful"><span class="knob"></span></label>
+      </div>
+      <div class="sample" id="sample" title="Click for another line"></div>
+    </div>
+
+    <div class="sect">
+      <h2><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5"/><path d="M12 7.5V12l3 2"/></svg>Rhythm</h2>
+      <div class="row">
+        <div class="label">Time between breaks</div>
+        <div class="info">i<span class="tip">Frequent short breaks reduce eye irritation and accommodation fatigue. Self-paced or frequent breaks may outperform rigid fixed intervals.</span></div>
+        <input type="range" id="interval_min" min="10" max="60" step="5"><div class="val" id="v_interval"></div>
+      </div>
+      <div class="row">
+        <div class="label">Short break length</div>
+        <input type="range" id="short_secs" min="20" max="90" step="5"><div class="val" id="v_short"></div>
+      </div>
+      <div class="row">
+        <div class="label">Long break every</div>
+        <div class="info">i<span class="tip">Twenty-second micro-breaks may be too short to fully release accommodative fatigue. Longer breaks every hour have stronger evidence behind them.</span></div>
+        <input type="range" id="long_every" min="2" max="5" step="1"><div class="val" id="v_every"></div>
+      </div>
+      <div class="row">
+        <div class="label">Long break length</div>
+        <input type="range" id="long_min" min="3" max="10" step="1"><div class="val" id="v_long"></div>
+      </div>
+      <div class="row">
+        <div class="label">Heads-up before a break
+          <div class="hint">A quiet pill near the clock, with time to find a stopping point.</div></div>
+        <select id="lead_secs"><option value="30">30 s</option><option value="60">1 min</option><option value="90">90 s</option></select>
+        <label class="switch"><input type="checkbox" id="prebreak"><span class="knob"></span></label>
+      </div>
+    </div>
+
+    <div class="sect">
+      <h2><svg viewBox="0 0 24 24"><path d="M3 12c2.5 3.8 6 5.6 9 5.6s6.5-1.8 9-5.6M12 17.6V20"/></svg>Small reminders</h2>
+      <div class="row">
+        <div class="label">Blink reminders</div>
+        <div class="info">i<span class="tip">Blink rate drops from 15+ per minute to 4–6 during screen use — and most of those are incomplete. Full, slow blinks restore the tear film.</span></div>
+        <input type="range" id="blink_min" min="5" max="30" step="5"><div class="val" id="v_blink"></div>
+        <label class="switch"><input type="checkbox" id="blink"><span class="knob"></span></label>
+      </div>
+      <div class="row">
+        <div class="label">Posture reminders</div>
+        <div class="info">i<span class="tip">Eye strain and neck–shoulder pain co-occur in over 63% of screen-heavy users. A small posture reset addresses both at once.</span></div>
+        <input type="range" id="posture_min" min="15" max="60" step="5"><div class="val" id="v_post"></div>
+        <label class="switch"><input type="checkbox" id="posture"><span class="knob"></span></label>
+      </div>
+    </div>
+
+    <div class="sect">
+      <h2><svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="13" rx="2"/><path d="M9 21h6"/></svg>Awareness</h2>
+      <div class="row">
+        <div class="label">Hold breaks during fullscreen
+          <div class="hint">Games, video, presentations — gazeOff waits.</div></div>
+        <label class="switch"><input type="checkbox" id="smart_fullscreen"><span class="knob"></span></label>
+      </div>
+      <div class="row">
+        <div class="label">Cooldown after fullscreen ends
+          <div class="hint">A moment to land before a pending break appears.</div></div>
+        <select id="cooldown_secs">
+          <option value="0">none</option><option value="30">30 s</option>
+          <option value="60">1 min</option><option value="120">2 min</option>
+          <option value="300">5 min</option></select>
+      </div>
+      <div class="row">
+        <div class="label">Pause the timer when away for</div>
+        <select id="idle_pause">
+          <option value="30">30 s</option><option value="60">1 min</option>
+          <option value="120">2 min</option></select>
+      </div>
+      <div class="row">
+        <div class="label">Count it as a real break after
+          <div class="hint">A coffee run resets the session. A glance away doesn't.</div></div>
+        <select id="idle_reset">
+          <option value="180">3 min</option><option value="300">5 min</option>
+          <option value="600">10 min</option></select>
+      </div>
+    </div>
+
+    <div class="sect">
+      <h2><svg viewBox="0 0 24 24"><path d="M12 3v2M12 19v2M3 12h2M19 12h2M5.6 5.6l1.4 1.4M17 17l1.4 1.4M5.6 18.4L7 17M17 7l1.4-1.4"/><circle cx="12" cy="12" r="4"/></svg>Hours &amp; days</h2>
+      <div class="row">
+        <div class="label">Active hours
+          <div class="hint">Outside these hours, gazeOff stays silent.</div></div>
+        <select id="hours_start"></select><span style="color:rgba(233,229,222,.4)">to</span><select id="hours_end"></select>
+      </div>
+      <div class="row">
+        <div class="label">Active days</div>
+        <div class="days" id="days"></div>
+      </div>
+    </div>
+
+    <div class="sect">
+      <h2><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19 12a7 7 0 0 0-.1-1.2l2-1.6-2-3.4-2.4 1a7 7 0 0 0-2-1.2L14 3h-4l-.5 2.6a7 7 0 0 0-2 1.2l-2.4-1-2 3.4 2 1.6A7 7 0 0 0 5 12c0 .4 0 .8.1 1.2l-2 1.6 2 3.4 2.4-1a7 7 0 0 0 2 1.2L10 21h4l.5-2.6a7 7 0 0 0 2-1.2l2.4 1 2-3.4-2-1.6c.06-.4.1-.8.1-1.2z"/></svg>General</h2>
+      <div class="row">
+        <div class="label">Start with Windows</div>
+        <label class="switch"><input type="checkbox" id="autostart"><span class="knob"></span></label>
+      </div>
+      <div class="row">
+        <div class="label">Soft chime when a break completes</div>
+        <label class="switch"><input type="checkbox" id="sound"><span class="knob"></span></label>
+      </div>
+    </div>
+  </div>
+</div>
+<script>
+const { invoke } = window.__TAURI__.core;
+const W = window.__TAURI__.window.getCurrentWindow();
+function closeWin(){ W.hide(); }
+
+const SAMPLES = {
+  calm: ['"Eyes to the horizon."','"Step back. Your screen can hold this thought."',
+    '"Blink slowly. Twice."','"You’ve earned this. Stand up, move a little."'],
+  playful: ['"Touch grass, twin. A few seconds, go."','"Unshrimp yourself."',
+    '"Your eyes are not it rn. Look far away."','"Long session detected. You’re cooked. Rest."']
+};
+let sampleIdx = 0;
+
+const hs = document.getElementById("hours_start"), he = document.getElementById("hours_end");
+for (let h = 0; h <= 24; h++) {
+  const t = h === 24 ? "midnight" : `${((h + 11) % 12) + 1} ${h < 12 ? "am" : "pm"}`;
+  if (h < 24) hs.add(new Option(h === 0 ? "always" : t, h));
+  if (h > 0) he.add(new Option(t, h));
+}
+
+// day chips: display Mon..Sun, bitmask bit 0 = Sunday
+const DAY_ORDER = [1,2,3,4,5,6,0], DAY_NAMES = ["M","T","W","T","F","S","S"];
+const daysEl = document.getElementById("days");
+DAY_ORDER.forEach((bit, i) => {
+  const d = document.createElement("div");
+  d.className = "day"; d.textContent = DAY_NAMES[i]; d.dataset.bit = bit;
+  d.onclick = () => { s.days ^= (1 << bit); show(); push(); };
+  daysEl.appendChild(d);
+});
+
+let s = null, timer = null;
+const $ = id => document.getElementById(id);
+const TOGGLES = ["force_due","playful","blink","posture","prebreak","smart_fullscreen","autostart","sound"];
+const RANGES = ["interval_min","short_secs","long_every","long_min","blink_min","posture_min"];
+const SELECTS = ["lead_secs","cooldown_secs","idle_pause","idle_reset","hours_start","hours_end"];
+
+function show() {
+  document.querySelectorAll(".mode").forEach(m =>
+    m.classList.toggle("sel", m.dataset.mode === s.mode));
+  $("forceRow").style.display = s.mode === "smart" ? "flex" : "none";
+  for (const k of TOGGLES) $(k).checked = s[k];
+  for (const k of RANGES) $(k).value = s[k];
+  for (const k of SELECTS) $(k).value = s[k];
+  document.querySelectorAll(".day").forEach(d =>
+    d.classList.toggle("on", (s.days >> +d.dataset.bit & 1) === 1));
+  const deck = SAMPLES[s.playful ? "playful" : "calm"];
+  $("sample").textContent = deck[sampleIdx % deck.length];
+  $("v_interval").textContent = s.interval_min + " min";
+  $("v_short").textContent = s.short_secs + " s";
+  $("v_every").textContent = s.long_every + " breaks";
+  $("v_long").textContent = s.long_min + " min";
+  $("v_blink").textContent = s.blink_min + " min";
+  $("v_post").textContent = s.posture_min + " min";
+}
+
+function push() {
+  clearTimeout(timer);
+  timer = setTimeout(() => invoke("set_settings", { s }), 250);
+}
+
+function wire() {
+  document.querySelectorAll(".mode").forEach(m => m.onclick = () => {
+    s.mode = m.dataset.mode; show(); push(); });
+  for (const k of TOGGLES) $(k).onchange = () => { s[k] = $(k).checked; show(); push(); };
+  for (const k of RANGES) $(k).oninput = () => { s[k] = +$(k).value; show(); push(); };
+  for (const k of SELECTS) $(k).onchange = () => { s[k] = +$(k).value; push(); };
+  $("sample").onclick = () => { sampleIdx++; show(); };
+}
+
+invoke("get_settings").then(v => { s = v; show(); wire(); });
+addEventListener("contextmenu", e => e.preventDefault());
+</script>
+</body></html>

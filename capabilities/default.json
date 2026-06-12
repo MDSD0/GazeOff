@@ -1,0 +1,10 @@
+{
+  "identifier": "default",
+  "windows": ["*"],
+  "permissions": [
+    "core:default",
+    "core:window:allow-close",
+    "core:window:allow-hide",
+    "core:window:allow-start-dragging"
+  ]
+}
