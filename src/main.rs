@@ -500,8 +500,8 @@ fn hide(app: &AppHandle, label: &str) {
     }
 }
 
-fn place_nudge_at(app: &AppHandle, x: i32, y: i32) {
-    if let Some(w) = app.get_webview_window("nudge") {
+fn place_window_at(app: &AppHandle, label: &str, x: i32, y: i32, offset_x: i32, offset_y: i32) {
+    if let Some(w) = app.get_webview_window(label) {
         let sf = w.scale_factor().unwrap_or(1.0);
         let Ok(size) = w.inner_size() else {
             return;
@@ -509,9 +509,10 @@ fn place_nudge_at(app: &AppHandle, x: i32, y: i32) {
         let ww = size.width as i32;
         let wh = size.height as i32;
         let margin = (14.0 * sf) as i32;
-        let offset_x = (18.0 * sf) as i32;
-        let offset_y = (20.0 * sf) as i32;
-        let (mut nx, mut ny) = (x + offset_x, y + offset_y);
+        let (mut nx, mut ny) = (
+            x + (offset_x as f64 * sf) as i32,
+            y + (offset_y as f64 * sf) as i32,
+        );
         if let Ok(Some(mon)) = w.current_monitor().or_else(|_| app.primary_monitor()) {
             let mp = mon.position();
             let ms = mon.size();
@@ -526,10 +527,17 @@ fn place_nudge_at(app: &AppHandle, x: i32, y: i32) {
     }
 }
 
+fn place_nudge_at(app: &AppHandle, x: i32, y: i32) {
+    place_window_at(app, "nudge", x, y, 18, 20);
+}
+
+fn place_skip_at(app: &AppHandle, x: i32, y: i32) {
+    place_window_at(app, "skip_nudge", x, y, 18, 58);
+}
+
 fn show_nudge(app: &AppHandle, kind: &str, e: &mut Engine) {
     let secs = match kind {
         "countdown" => 5,
-        "skip" => 10,
         "debt" => 12,
         "prebreak" => 12,
         _ => 11,
@@ -537,8 +545,8 @@ fn show_nudge(app: &AppHandle, kind: &str, e: &mut Engine) {
     e.nudge_until = now_epoch() + secs;
     if let Some(w) = app.get_webview_window("nudge") {
         let _ = w.set_size(LogicalSize::new(
-            if kind == "skip" { 326.0 } else { 384.0 },
-            84.0,
+            if kind == "countdown" { 164.0 } else { 260.0 },
+            42.0,
         ));
         if let Some((x, y)) = cursor_pos() {
             place_nudge_at(app, x, y);
@@ -557,12 +565,15 @@ fn show_nudge(app: &AppHandle, kind: &str, e: &mut Engine) {
     }
 }
 
-fn start_pending_skip_offer(app: &AppHandle, e: &mut Engine) -> Option<(i32, i32, u64)> {
+fn start_skip_offer(app: &AppHandle, e: &mut Engine) -> Option<(i32, i32, u64)> {
     let (x, y) = cursor_pos()?;
     e.skip_offer = true;
-    e.cursor_countdown = false;
-    show_nudge(app, "skip", e);
-    Some((x, y, now_epoch() + 8))
+    place_skip_at(app, x, y);
+    if let Some(w) = app.get_webview_window("skip_nudge") {
+        let _ = app.emit("skip-nudge", json!({ "playful": e.s.playful }));
+        let _ = w.show();
+    }
+    Some((x, y, 0))
 }
 
 fn start_break(app: &AppHandle, e: &mut Engine) {
@@ -580,6 +591,8 @@ fn start_break(app: &AppHandle, e: &mut Engine) {
     e.skip_offer = false;
     e.nudge_until = 0;
     let _ = app.emit("snap", e.snap(now_epoch()));
+    hide(app, "nudge");
+    hide(app, "skip_nudge");
     show_overlay(app);
     if e.s.display_off_break {
         set_monitor_power(true);
@@ -652,6 +665,7 @@ fn skip_break(app: AppHandle, eng: State<Eng>) {
         set_monitor_power(false);
         save(&app, &e);
         hide(&app, "overlay");
+        hide(&app, "skip_nudge");
     }
 }
 
@@ -670,6 +684,7 @@ fn skip_pending_break(app: AppHandle, eng: State<Eng>) {
         save(&app, &e);
         let _ = app.emit("snap", e.snap(now_epoch()));
         hide(&app, "nudge");
+        hide(&app, "skip_nudge");
     }
 }
 
@@ -688,6 +703,7 @@ fn delay_break(app: AppHandle, eng: State<Eng>, secs: u32) {
         save(&app, &e);
         let _ = app.emit("snap", e.snap(now_epoch()));
         hide(&app, "overlay");
+        hide(&app, "skip_nudge");
     }
 }
 
@@ -719,16 +735,17 @@ fn toggle_pause(app: AppHandle, eng: State<Eng>) {
     let mut e = eng.0.lock().unwrap();
     let now = now_epoch();
     e.paused_until = if now < e.paused_until { 0 } else { now + 3600 };
+    e.pending = false;
+    e.warned = false;
+    e.cursor_countdown = false;
+    e.skip_offer = false;
     if e.brk.is_some() {
         e.brk = None;
         set_monitor_power(false);
-        e.pending = false;
-        e.warned = false;
-        e.cursor_countdown = false;
-        e.skip_offer = false;
         hide(&app, "overlay");
-        hide(&app, "nudge");
     }
+    hide(&app, "nudge");
+    hide(&app, "skip_nudge");
     let _ = app.emit("snap", e.snap(now));
 }
 
@@ -805,10 +822,26 @@ fn main() {
                     .skip_taskbar(true)
                     .resizable(false)
                     .focused(false)
+                    .focusable(false)
                     .shadow(false)
-                    .inner_size(364.0, 104.0)
+                    .inner_size(164.0, 42.0)
                     .visible(false)
                     .build()?;
+            let skip_nudge = WebviewWindowBuilder::new(
+                app,
+                "skip_nudge",
+                WebviewUrl::App("skip_nudge.html".into()),
+            )
+            .transparent(true)
+            .decorations(false)
+            .always_on_top(true)
+            .skip_taskbar(true)
+            .resizable(false)
+            .focused(false)
+            .shadow(false)
+            .inner_size(70.0, 32.0)
+            .visible(false)
+            .build()?;
             let panel =
                 WebviewWindowBuilder::new(app, "panel", WebviewUrl::App("panel.html".into()))
                     .transparent(true)
@@ -830,11 +863,12 @@ fn main() {
                     .build()?;
             square_window(&overlay);
             square_window(&nudge);
+            square_window(&skip_nudge);
             square_window(&panel);
             square_window(&settings);
 
             // overlay & settings never truly close — they hide
-            for label in ["overlay", "settings", "panel", "nudge"] {
+            for label in ["overlay", "settings", "panel", "nudge", "skip_nudge"] {
                 if let Some(w) = app.get_webview_window(label) {
                     let wc = w.clone();
                     let is_panel = label == "panel";
@@ -877,11 +911,17 @@ fn main() {
                     "pause" => {
                         let mut e = eng_menu.lock().unwrap();
                         e.paused_until = now_epoch() + 3600;
+                        e.pending = false;
+                        e.warned = false;
+                        e.cursor_countdown = false;
+                        e.skip_offer = false;
                         if e.brk.is_some() {
                             e.brk = None;
                             set_monitor_power(false);
                             hide(app, "overlay");
                         }
+                        hide(app, "nudge");
+                        hide(app, "skip_nudge");
                     }
                     "resume" => {
                         eng_menu.lock().unwrap().paused_until = 0;
@@ -922,13 +962,28 @@ fn main() {
                 })
                 .build(app)?;
 
+            // Smooth cursor-following countdown; the main engine still ticks at 1 Hz.
+            let follow_handle = handle.clone();
+            let eng_follow = engine.clone();
+            std::thread::spawn(move || loop {
+                std::thread::sleep(std::time::Duration::from_millis(16));
+                let active = {
+                    let e = eng_follow.lock().unwrap();
+                    e.cursor_countdown && e.brk.is_none()
+                };
+                if active {
+                    if let Some((x, y)) = cursor_pos() {
+                        place_nudge_at(&follow_handle, x, y);
+                    }
+                }
+            });
+
             // the 1 Hz heartbeat
             let eng_tick = engine.clone();
             std::thread::spawn(move || {
                 let mut last_icon = String::new();
                 let mut last_tip = String::new();
                 let mut skip_anchor: Option<(i32, i32, u64)> = None;
-                let mut skip_offer_until = 0u64;
                 let mut last_cursor = cursor_pos();
                 loop {
                     std::thread::sleep(std::time::Duration::from_secs(1));
@@ -1030,19 +1085,15 @@ fn main() {
                             e.cursor_countdown = true;
                             e.warned = true;
                             show_nudge(&handle, "countdown", &mut e);
-                        }
-                        if e.cursor_countdown && countdown_window {
-                            if let Some((x, y)) = cur {
-                                place_nudge_at(&handle, x, y);
+                            if e.skippable() && !e.skip_offer {
+                                skip_anchor = start_skip_offer(&handle, &mut e);
                             }
                         }
 
                         // wait for a natural pause in input, and never interrupt fullscreen
                         if e.pending && now >= e.fs_until && !fs {
                             if e.skippable() && !e.skip_offer {
-                                skip_anchor = start_pending_skip_offer(&handle, &mut e);
-                                skip_offer_until =
-                                    skip_anchor.map(|(_, _, until)| until).unwrap_or(0);
+                                skip_anchor = start_skip_offer(&handle, &mut e);
                             }
 
                             let moved_away =
@@ -1054,20 +1105,16 @@ fn main() {
                                     false
                                 };
 
-                            if !e.skippable()
-                                || moved_away
-                                || (skip_offer_until != 0 && now >= skip_offer_until)
-                            {
+                            if !e.skippable() || moved_away {
                                 hide(&handle, "nudge");
+                                hide(&handle, "skip_nudge");
                                 e.nudge_until = 0;
                                 e.skip_offer = false;
                                 skip_anchor = None;
-                                skip_offer_until = 0;
                                 start_break(&handle, &mut e);
                             }
                         } else if !e.pending && !fs {
                             skip_anchor = None;
-                            skip_offer_until = 0;
                             if e.debt > 0 && e.work >= 45 * 60 && e.work / 60 != e.debt_nudged_at {
                                 e.debt_nudged_at = e.work / 60;
                                 show_nudge(&handle, "debt", &mut e);

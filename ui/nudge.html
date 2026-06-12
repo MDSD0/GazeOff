@@ -3,122 +3,66 @@
 <head>
 <meta charset="utf-8">
 <style>
-  * { box-sizing:border-box; margin:0; padding:0; user-select:none; }
+  * { box-sizing:border-box; margin:0; padding:0; user-select:none; pointer-events:none; }
   html,body {
     width:100%; height:100%; overflow:hidden; background:transparent;
     font-family:"Segoe UI Variable Text","Segoe UI",system-ui,sans-serif;
-    color:#eef0eb;
-    --warm:#d9ad72;
+    color:rgba(245,245,240,.94);
   }
-  .mist {
-    position:fixed; inset:0; border-radius:14px; overflow:hidden;
-    background:
-      radial-gradient(120% 160% at 20% -30%, rgba(222,231,229,.16), transparent 56%),
-      radial-gradient(80% 130% at 95% 20%, rgba(217,173,114,.16), transparent 62%),
-      linear-gradient(155deg, rgba(35,43,46,.96), rgba(22,29,31,.92) 54%, rgba(17,22,22,.90));
-    display:flex; align-items:center; gap:14px; padding:13px 16px 13px 17px;
-    opacity:0; transform:translateY(7px);
-    transition:opacity .34s ease, transform .34s cubic-bezier(.22,.8,.3,1);
+  .line {
+    position:fixed; inset:0; display:flex; align-items:center;
+    font-size:15px; line-height:1; font-weight:760; letter-spacing:0;
+    text-shadow:
+      0 2px 10px rgba(0,0,0,.82),
+      0 0 24px rgba(0,0,0,.60);
+    opacity:0; transform:translateY(4px);
+    transition:opacity .14s ease, transform .14s ease;
+    white-space:nowrap;
   }
-  .mist.in { opacity:1; transform:none; }
-  .warm {
-    width:4px; height:42px; border-radius:999px; flex:none;
-    background:linear-gradient(180deg, transparent, var(--warm) 28% 72%, transparent);
-    opacity:.88;
-    filter:blur(.15px);
-  }
-  .copy { flex:1; min-width:0; }
-  .ttl {
-    font-size:11px; color:rgba(238,240,235,.46); font-weight:760;
-    margin-bottom:4px; text-transform:uppercase; letter-spacing:.11em;
-  }
-  .txt {
-    font-size:16px; line-height:1.25; color:#f3f3ef; font-weight:690;
-    overflow:hidden; text-overflow:ellipsis; white-space:nowrap;
-  }
-  button {
-    height:32px; border:0; border-radius:999px; padding:0 17px;
-    color:#211d16; background:rgba(217,173,114,.92);
-    font:inherit; font-size:13px; font-weight:820; cursor:pointer; flex:none;
-  }
-  button:hover { background:#e3bd83; }
-  button.hidden { display:none; }
-  .fuse {
-    position:absolute; left:17px; right:17px; bottom:7px; height:2px;
-    background:linear-gradient(90deg, var(--warm), transparent);
-    opacity:.48; transform-origin:left;
-  }
-  .fuse.run { animation:burn linear forwards; }
-  .pulse .warm { animation:warm-breathe 1s ease-in-out infinite; }
-  @keyframes burn { from { transform:scaleX(1); } to { transform:scaleX(0); } }
-  @keyframes warm-breathe { 0%,100% { opacity:.42; } 50% { opacity:.95; } }
+  .line.in { opacity:1; transform:none; }
 </style>
 </head>
 <body>
-  <div class="mist" id="mist">
-    <div class="warm"></div>
-    <div class="copy"><div class="ttl" id="ttl"></div><div class="txt" id="txt"></div></div>
-    <button id="action" class="hidden">Skip</button>
-    <div class="fuse" id="fuse"></div>
-  </div>
+  <div class="line" id="line"></div>
 <script>
-const { invoke } = window.__TAURI__.core;
 const { listen } = window.__TAURI__.event;
-let countdownTimer = null;
+let timer = null;
 
 const COPY = {
-  calm: {
-    prebreak:["Break soon. Find a soft landing.","Wrap the thought. Rest is close.","A short pause is coming up."],
-    blink:["Blink slowly. Twice.","Close your eyes for one breath.","A few full blinks. Let them rest."],
-    posture:["Drop your shoulders. Unclench your jaw.","Sit tall. Feet flat.","Roll your shoulders back once."],
-    debt:["{m} minutes with no break.","You skipped a few. Let the next one land.","Long stretch. Your eyes deserve the reset."]
-  },
-  playful: {
-    prebreak:["Break incoming. Wrap the thought.","Find a save point. Break soon.","Rest is loading."],
-    blink:["Blink. No, actually blink.","Your blink rate is in shambles. Fix it."],
-    posture:["Unshrimp yourself.","Shoulders are not earrings. Drop them.","Posture check. You know what you did."],
-    debt:["{m} minutes with no break. Brutal.","Skipped too much. Future you is watching.","You are cooked. Take the next break."]
-  }
+  prebreak:["Break soon","Find a stopping point","Rest is close"],
+  blink:["Blink slowly","Rest your eyes"],
+  posture:["Drop your shoulders","Sit tall"],
+  debt:["{m} min without a break"]
 };
-const TTL = { countdown:"Break starts", skip:"One more chance", prebreak:"Break soon", blink:"Blink", posture:"Posture", debt:"Still working" };
 const pick = a => a[Math.floor(Math.random()*a.length)];
 
-function showCountdown(secs) {
-  clearInterval(countdownTimer);
+function show(text) {
+  const line = document.getElementById("line");
+  line.textContent = text;
+  line.classList.remove("in"); void line.offsetWidth; line.classList.add("in");
+}
+
+function countdown(secs) {
+  clearInterval(timer);
   let n = secs || 5;
-  const txt = document.getElementById("txt");
-  const draw = () => { txt.textContent = `Break starts in ${n}`; n -= 1; };
-  draw();
-  countdownTimer = setInterval(() => {
-    if (n < 0) return clearInterval(countdownTimer);
-    draw();
+  show(`Break in ${n}`);
+  timer = setInterval(() => {
+    n -= 1;
+    if (n <= 0) return clearInterval(timer);
+    show(`Break in ${n}`);
   }, 1000);
 }
 
 listen("nudge", e => {
-  const { kind, playful, secs, work_mins } = e.payload;
-  const voice = COPY[playful ? "playful" : "calm"];
-  const mist = document.getElementById("mist");
-  const action = document.getElementById("action");
-  clearInterval(countdownTimer);
-  document.getElementById("ttl").textContent = TTL[kind] || "";
-  mist.classList.toggle("pulse", kind === "countdown");
-  action.className = kind === "skip" ? "" : "hidden";
+  const { kind, secs, work_mins } = e.payload;
+  clearInterval(timer);
   if (kind === "countdown") {
-    showCountdown(secs || 5);
-  } else if (kind === "skip") {
-    document.getElementById("txt").textContent = "Skip this one, or move away to begin.";
-  } else {
-    const deck = voice[kind] || voice.prebreak;
-    document.getElementById("txt").textContent = pick(deck).replace("{m}", work_mins || 45);
+    countdown(secs || 5);
+    return;
   }
-  const fuse = document.getElementById("fuse");
-  fuse.className = "fuse"; void fuse.offsetWidth;
-  fuse.style.animationDuration = (secs || 11) + "s";
-  fuse.className = "fuse run";
-  mist.classList.remove("in"); void mist.offsetWidth; mist.classList.add("in");
+  const deck = COPY[kind] || COPY.prebreak;
+  show(pick(deck).replace("{m}", work_mins || 45));
 });
-action.onclick = () => invoke("skip_pending_break");
 addEventListener("contextmenu", e => e.preventDefault());
 </script>
 </body>
