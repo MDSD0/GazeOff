@@ -14,35 +14,35 @@
   .wall {
     position:fixed; inset:-46px;
     background-image:var(--wallpaper),
-      linear-gradient(145deg,#16272d 0%,#24404d 36%,#496d5d 64%,#d79663 100%);
+      linear-gradient(145deg,#17252a 0%,#27363b 42%,#64736f 72%,#c99963 100%);
     background-size:cover; background-position:center;
-    filter:blur(26px) saturate(1.12) brightness(.72); transform:scale(1.06);
+    filter:blur(30px) saturate(.86) brightness(.80); transform:scale(1.065);
     transition:opacity .45s ease;
   }
   .wash {
     position:fixed; inset:0; pointer-events:none; transition:opacity .45s ease;
     background:
       radial-gradient(58% 86% at 18% 14%, rgba(138,190,218,.26), transparent 62%),
-      radial-gradient(58% 72% at 80% 24%, rgba(126,179,145,.24), transparent 66%),
-      radial-gradient(70% 46% at 50% 86%, rgba(231,164,92,.32), transparent 62%),
-      linear-gradient(180deg, rgba(8,16,18,.24), rgba(6,9,8,.56));
+      radial-gradient(58% 72% at 80% 24%, rgba(162,174,165,.18), transparent 66%),
+      radial-gradient(70% 46% at 50% 86%, rgba(217,173,114,.22), transparent 62%),
+      linear-gradient(180deg, rgba(15,24,27,.18), rgba(9,13,13,.46));
   }
   .stars {
     position:fixed; inset:0; pointer-events:none; opacity:.32; transition:opacity .45s ease;
     background:
-      radial-gradient(circle at 16% 24%, rgba(255,255,255,.72) 0 1px, transparent 1.4px),
-      radial-gradient(circle at 68% 16%, rgba(255,255,255,.55) 0 1px, transparent 1.4px),
-      radial-gradient(circle at 84% 38%, rgba(255,255,255,.42) 0 1px, transparent 1.4px),
-      radial-gradient(circle at 36% 12%, rgba(255,255,255,.46) 0 1px, transparent 1.4px);
+      radial-gradient(circle at 16% 24%, rgba(238,240,235,.42) 0 1px, transparent 1.5px),
+      radial-gradient(circle at 68% 16%, rgba(238,240,235,.30) 0 1px, transparent 1.5px),
+      radial-gradient(circle at 84% 38%, rgba(238,240,235,.24) 0 1px, transparent 1.5px),
+      radial-gradient(circle at 36% 12%, rgba(238,240,235,.28) 0 1px, transparent 1.5px);
     animation:star-drift 28s linear infinite alternate;
   }
   .horizon {
     position:fixed; left:-8vw; right:-8vw; bottom:12vh; height:22vh; opacity:.62; pointer-events:none;
     background:
-      radial-gradient(42vw 10vh at 30% 64%, rgba(232,238,231,.16), transparent 70%),
-      radial-gradient(46vw 11vh at 70% 56%, rgba(232,238,231,.13), transparent 72%),
-      linear-gradient(180deg, transparent 44%, rgba(255,255,255,.22) 45%, transparent 47%);
-    filter:blur(11px);
+      radial-gradient(42vw 10vh at 30% 64%, rgba(232,238,231,.13), transparent 70%),
+      radial-gradient(46vw 11vh at 70% 56%, rgba(232,238,231,.10), transparent 72%),
+      linear-gradient(180deg, transparent 44%, rgba(217,173,114,.20) 45%, transparent 48%);
+    filter:blur(14px);
     animation:horizon-breathe 16s ease-in-out infinite alternate;
     transition:opacity .45s ease;
   }
@@ -81,11 +81,11 @@
     filter:blur(2px);
   }
   svg.ring { position:absolute; inset:0; width:100%; height:100%; transform:rotate(-90deg); overflow:visible; }
-  .track { fill:none; stroke:rgba(255,255,255,.15); stroke-width:7; }
+  .track { fill:none; stroke:rgba(238,240,235,.10); stroke-width:7; }
   .progress {
-    fill:none; stroke:rgba(236,243,236,.88); stroke-width:7; stroke-linecap:round;
+    fill:none; stroke:rgba(217,173,114,.86); stroke-width:7; stroke-linecap:round;
     stroke-dasharray:703.72; stroke-dashoffset:703.72;
-    filter:drop-shadow(0 0 18px rgba(214,237,224,.28));
+    filter:drop-shadow(0 0 18px rgba(217,173,114,.16));
     transition:stroke-dashoffset .95s linear;
   }
   .time {
@@ -105,13 +105,12 @@
   button {
     min-width:136px; height:40px; border:0; border-radius:999px; padding:0 22px;
     display:none; align-items:center; justify-content:center; gap:8px;
-    color:white; background:rgba(255,255,255,.20);
-    box-shadow:inset 0 1px 0 rgba(255,255,255,.20), 0 12px 34px rgba(0,0,0,.17);
-    backdrop-filter:blur(18px); font:inherit; font-size:15px; font-weight:820; cursor:pointer;
+    color:#f4f0e8; background:rgba(33,42,43,.76);
+    font:inherit; font-size:15px; font-weight:820; cursor:pointer;
     transition:transform .18s ease, background .18s ease, opacity .18s ease;
   }
   button.on { display:flex; }
-  button:hover { transform:translateY(-1px); background:rgba(255,255,255,.31); }
+  button:hover { transform:translateY(-1px); background:rgba(62,70,68,.86); }
   .skip-wrap { position:relative; display:flex; justify-content:center; padding-top:46px; }
   .delay-menu {
     position:absolute; left:50%; bottom:48px; transform:translate(-50%, 10px) scale(.96);
@@ -122,9 +121,9 @@
     opacity:1; pointer-events:auto; transform:translate(-50%, 0) scale(1);
   }
   .delay-menu button {
-    display:flex; min-width:118px; height:35px; font-size:14px; background:rgba(255,255,255,.17);
+    display:flex; min-width:118px; height:35px; font-size:14px; background:rgba(41,50,51,.82);
   }
-  .display-btn { min-width:152px; background:rgba(6,9,8,.42); }
+  .display-btn { min-width:152px; background:rgba(14,18,18,.58); }
   .esc { margin-top:-2px; color:rgba(255,255,255,.34); font-size:13px; font-weight:650; }
   body.ret .center { opacity:.44; transform:translateY(-10px) scale(.985); transition:.9s ease; }
   body.in .msg { animation:settle .72s cubic-bezier(.22,.8,.3,1) both; }

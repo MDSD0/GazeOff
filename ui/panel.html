@@ -7,19 +7,20 @@
   html,body {
     width:100%; height:100%; overflow:hidden; background:transparent;
     font-family:"Segoe UI Variable Text","Segoe UI",system-ui,sans-serif; color:#f2f2ef;
-    --acc:#8fbfa3; --accSoft:rgba(143,191,163,.18);
+    --acc:#d9ad72; --accSoft:rgba(217,173,114,.14);
   }
   .menu {
-    position:fixed; inset:0; border-radius:10px; overflow:hidden;
+    position:fixed; inset:0; border-radius:12px; overflow:hidden;
     background:
-      linear-gradient(180deg,rgba(37,42,39,.98),rgba(24,27,25,.985)),
-      radial-gradient(120% 80% at 86% -8%, var(--accSoft), transparent 64%);
-    box-shadow:0 18px 48px rgba(0,0,0,.42);
+      radial-gradient(130% 95% at 82% -10%, var(--accSoft), transparent 66%),
+      radial-gradient(90% 110% at 8% 12%, rgba(197,211,211,.08), transparent 58%),
+      linear-gradient(160deg,rgba(34,42,43,.98),rgba(20,27,28,.97) 54%,rgba(17,21,21,.96));
     padding:12px;
   }
   .menu::before {
-    content:""; position:absolute; left:0; right:0; top:0; height:3px;
-    background:linear-gradient(90deg,#8fbfa3,#80b9d8,#f0b56f);
+    content:""; position:absolute; left:14px; right:42%; top:0; height:3px;
+    background:linear-gradient(90deg,transparent,var(--acc),transparent);
+    opacity:.7;
   }
   .top { padding:10px 10px 12px; }
   .eyebrow { color:rgba(242,242,239,.42); font-size:14px; font-weight:750; margin-bottom:6px; }
@@ -27,8 +28,8 @@
   .face {
     width:42px; height:42px; border-radius:10px; display:grid; place-items:center;
     background:
-      linear-gradient(180deg,rgba(255,255,255,.10),rgba(255,255,255,.025)),
-      radial-gradient(80% 90% at 50% 76%, rgba(240,181,111,.34), transparent 58%);
+      radial-gradient(80% 90% at 50% 76%, rgba(217,173,114,.26), transparent 58%),
+      rgba(238,240,235,.045);
   }
   .face svg { width:28px; height:28px; stroke:#e8eee7; fill:none; stroke-width:2; stroke-linecap:round; stroke-linejoin:round; }
   .status-main { flex:1; min-width:0; }
@@ -36,30 +37,30 @@
   .sub { color:rgba(242,242,239,.58); font-size:13px; margin-top:3px; font-weight:560; line-height:1.25; }
   .timer {
     min-width:64px; height:34px; border-radius:999px; display:grid; place-items:center;
-    color:#121412; background:#e7ece5; font-size:17px; font-weight:820; font-variant-numeric:tabular-nums;
+    color:#211d16; background:rgba(217,173,114,.92); font-size:17px; font-weight:820; font-variant-numeric:tabular-nums;
   }
-  .sep { height:1px; background:rgba(255,255,255,.10); margin:7px 0; }
+  .sep { height:10px; margin:1px 0; }
   .item {
     width:100%; min-height:46px; display:flex; align-items:center; gap:12px;
     padding:0 10px; border:0; border-radius:9px; background:transparent; color:#f2f2ef;
     font:inherit; font-size:18px; font-weight:690; text-align:left; cursor:pointer;
   }
-  .item:hover { background:rgba(255,255,255,.075); }
-  .item.primary { background:#e7ece5; color:#151715; }
+  .item:hover { background:rgba(238,240,235,.055); }
+  .item.primary { background:rgba(217,173,114,.90); color:#211d16; }
   .item svg { width:20px; height:20px; stroke:currentColor; fill:none; stroke-width:2.2; stroke-linecap:round; stroke-linejoin:round; opacity:.95; }
   .item .grow { flex:1; }
   .hint { color:rgba(242,242,239,.42); font-size:13px; font-weight:700; }
   .item.primary .hint { color:rgba(21,23,21,.55); }
   .stats { display:grid; grid-template-columns:repeat(3,1fr); gap:8px; padding:8px 2px 4px; }
-  .stat { border-radius:8px; background:rgba(255,255,255,.055); padding:10px 4px 9px; text-align:center; }
+  .stat { border-radius:8px; background:rgba(238,240,235,.042); padding:10px 4px 9px; text-align:center; }
   .stat .n { font-size:18px; font-weight:780; font-variant-numeric:tabular-nums; }
   .stat .l { margin-top:2px; font-size:11px; color:rgba(242,242,239,.44); text-transform:uppercase; letter-spacing:.06em; font-weight:760; }
   .spark {
     height:50px; display:flex; align-items:flex-end; gap:4px; margin:8px 2px 2px; padding:8px 8px 6px;
-    border-radius:8px; background:rgba(255,255,255,.04);
+    border-radius:8px; background:rgba(238,240,235,.032);
   }
-  .bar { flex:1; max-width:16px; min-height:4px; border-radius:3px 3px 1px 1px; background:rgba(140,198,166,.8); }
-  .bar.miss { background:rgba(224,122,93,.82); }
+  .bar { flex:1; max-width:16px; min-height:4px; border-radius:3px 3px 1px 1px; background:rgba(217,173,114,.72); }
+  .bar.miss { background:rgba(160,108,93,.76); }
   .empty { margin:auto; color:rgba(242,242,239,.36); font-size:12px; font-weight:650; }
 </style>
 </head>
@@ -90,7 +91,7 @@
 const { invoke } = window.__TAURI__.core;
 const { listen } = window.__TAURI__.event;
 const WORD = { clear:"Your break begins soon", accumulating:"Longer than usual", due:"Break due now" };
-const ACC = { clear:["#8cc6a6","rgba(140,198,166,.18)"], accumulating:["#d7b16d","rgba(215,177,109,.18)"], due:["#e07a5d","rgba(224,122,93,.18)"] };
+const ACC = { clear:["#d9ad72","rgba(217,173,114,.14)"], accumulating:["#d9ad72","rgba(217,173,114,.18)"], due:["#d9ad72","rgba(217,173,114,.22)"] };
 function render(s) {
   const [acc, soft] = s.paused ? ["#a7a7a1","rgba(167,167,161,.13)"] : (ACC[s.state] || ACC.clear);
   document.body.style.setProperty("--acc", acc);

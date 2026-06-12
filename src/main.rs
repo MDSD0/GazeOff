@@ -529,16 +529,16 @@ fn place_nudge_at(app: &AppHandle, x: i32, y: i32) {
 fn show_nudge(app: &AppHandle, kind: &str, e: &mut Engine) {
     let secs = match kind {
         "countdown" => 5,
-        "skip" => 8,
-        "debt" => 6,
-        "prebreak" => 8,
-        _ => 7,
+        "skip" => 10,
+        "debt" => 12,
+        "prebreak" => 12,
+        _ => 11,
     };
     e.nudge_until = now_epoch() + secs;
     if let Some(w) = app.get_webview_window("nudge") {
         let _ = w.set_size(LogicalSize::new(
-            if kind == "skip" { 286.0 } else { 314.0 },
-            76.0,
+            if kind == "skip" { 326.0 } else { 384.0 },
+            84.0,
         ));
         if let Some((x, y)) = cursor_pos() {
             place_nudge_at(app, x, y);
@@ -832,9 +832,6 @@ fn main() {
             square_window(&nudge);
             square_window(&panel);
             square_window(&settings);
-
-            // Native frost only where it is intentionally borderless.
-            let _ = window_vibrancy::apply_acrylic(&nudge, Some((22, 21, 19, 190)));
 
             // overlay & settings never truly close — they hide
             for label in ["overlay", "settings", "panel", "nudge"] {
