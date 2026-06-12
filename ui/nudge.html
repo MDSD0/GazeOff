@@ -10,82 +10,114 @@
     --acc:#8cc6a6;
   }
   .pill {
-    position:fixed; inset:0; border-radius:13px; overflow:hidden;
-    border:1px solid rgba(255,255,255,.14);
+    position:fixed; inset:0; border-radius:12px; overflow:hidden;
     background:
-      radial-gradient(120% 120% at 0% 0%, color-mix(in srgb, var(--acc) 28%, transparent), transparent 55%),
-      rgba(29,30,28,.96);
-    box-shadow:0 18px 46px rgba(0,0,0,.44), inset 0 1px 0 rgba(255,255,255,.12);
-    display:flex; align-items:center; gap:13px; padding:0 16px;
-    opacity:0; transform:translateY(8px) scale(.98);
-    transition:opacity .48s cubic-bezier(.22,.8,.3,1), transform .48s cubic-bezier(.22,.8,.3,1);
+      radial-gradient(105% 140% at 0% 0%, color-mix(in srgb, var(--acc) 26%, transparent), transparent 56%),
+      rgba(21,24,22,.97);
+    box-shadow:0 14px 36px rgba(0,0,0,.34), inset 0 1px 0 rgba(255,255,255,.10);
+    display:flex; align-items:center; gap:11px; padding:10px 12px;
+    opacity:0; transform:translateY(6px) scale(.98);
+    transition:opacity .22s cubic-bezier(.22,.8,.3,1), transform .22s cubic-bezier(.22,.8,.3,1);
   }
   .pill.in { opacity:1; transform:none; }
   .glyph {
-    width:38px; height:38px; border-radius:10px; display:grid; place-items:center;
-    background:linear-gradient(135deg,var(--acc),rgba(255,255,255,.16));
-    box-shadow:inset 0 1px 0 rgba(255,255,255,.28), 0 5px 18px rgba(0,0,0,.24);
+    width:34px; height:34px; border-radius:10px; display:grid; place-items:center;
+    background:linear-gradient(135deg,var(--acc),rgba(255,255,255,.12));
+    box-shadow:inset 0 1px 0 rgba(255,255,255,.24), 0 5px 15px rgba(0,0,0,.20);
     flex:none;
   }
-  .glyph svg { width:22px; height:22px; stroke:white; fill:none; stroke-width:2.2; stroke-linecap:round; stroke-linejoin:round; }
+  .glyph svg { width:20px; height:20px; stroke:white; fill:none; stroke-width:2.2; stroke-linecap:round; stroke-linejoin:round; }
   .col { flex:1; min-width:0; }
-  .ttl { font-size:12px; color:rgba(244,244,240,.48); font-weight:820; margin-bottom:2px; }
-  .txt { font-size:15px; line-height:1.28; color:#f4f4f0; font-weight:690; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  .ttl { font-size:11px; color:rgba(244,244,240,.50); font-weight:820; margin-bottom:2px; text-transform:uppercase; letter-spacing:.08em; }
+  .txt { font-size:14px; line-height:1.18; color:#f4f4f0; font-weight:720; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
   button {
-    height:32px; border:0; border-radius:999px; padding:0 16px; color:#151715; background:#e7ece5;
-    font:inherit; font-size:14px; font-weight:780; cursor:pointer; flex:none;
+    height:30px; border:0; border-radius:999px; padding:0 15px; color:#151715; background:#e7ece5;
+    font:inherit; font-size:13px; font-weight:820; cursor:pointer; flex:none;
   }
+  button:hover { background:#fff; }
   button.hidden { display:none; }
-  .fuse { position:absolute; left:0; bottom:0; height:2px; width:100%; background:linear-gradient(90deg,var(--acc),transparent); opacity:.7; transform-origin:left; }
+  .fuse { position:absolute; left:10px; right:10px; bottom:0; height:2px; background:linear-gradient(90deg,var(--acc),transparent); opacity:.78; transform-origin:left; }
   .fuse.run { animation:burn linear forwards; }
+  .pulse .glyph { animation:pulse 1s ease-in-out infinite; }
   @keyframes burn { from { transform:scaleX(1); } to { transform:scaleX(0); } }
+  @keyframes pulse { 0%,100% { transform:scale(.96); } 50% { transform:scale(1.06); } }
 </style>
 </head>
 <body>
   <div class="pill" id="pill">
     <div class="glyph" id="glyph"></div>
     <div class="col"><div class="ttl" id="ttl"></div><div class="txt" id="txt"></div></div>
-    <button id="now" class="hidden">Now</button>
+    <button id="action" class="hidden">Skip</button>
     <div class="fuse" id="fuse"></div>
   </div>
 <script>
 const { invoke } = window.__TAURI__.core;
 const { listen } = window.__TAURI__.event;
+let countdownTimer = null;
+
 const COPY = {
   calm: {
-    prebreak:["A break is coming in a minute.","Good time to find a stopping point.","One minute to a short rest."],
+    prebreak:["Break soon. Find a soft landing.","Wrap the thought. Rest is close.","A short pause is coming up."],
     blink:["Blink slowly. Twice.","Close your eyes for one breath.","A few full blinks. Let them rest."],
-    posture:["Drop your shoulders. Unclench your jaw.","Sit tall. Feet flat.","Roll your shoulders back once."]
+    posture:["Drop your shoulders. Unclench your jaw.","Sit tall. Feet flat.","Roll your shoulders back once."],
+    debt:["{m} minutes with no break.","You skipped a few. Let the next one land.","Long stretch. Your eyes deserve the reset."]
   },
   playful: {
-    prebreak:["Break incoming. Wrap the thought.","Find a save point. Break soon.","Sixty seconds till rest."],
+    prebreak:["Break incoming. Wrap the thought.","Find a save point. Break soon.","Rest is loading."],
     blink:["Blink. No, actually blink.","Your blink rate is in shambles. Fix it."],
-    posture:["Unshrimp yourself.","Shoulders are not earrings. Drop them.","Posture check. You know what you did."]
+    posture:["Unshrimp yourself.","Shoulders are not earrings. Drop them.","Posture check. You know what you did."],
+    debt:["{m} minutes with no break. Brutal.","Skipped too much. Future you is watching.","You are cooked. Take the next break."]
   }
 };
-const TTL = { prebreak:"Break soon", blink:"Blink", posture:"Posture" };
+const TTL = { countdown:"Break starts", skip:"One more chance", prebreak:"Break soon", blink:"Blink", posture:"Posture", debt:"Still working" };
 const GLYPH = {
   blink:'<svg viewBox="0 0 24 24"><path d="M3 12c2.5 3.8 6 5.6 9 5.6s6.5-1.8 9-5.6"/><path d="M7 15.5l-1.6 2M12 17.6V20M17 15.5l1.6 2"/></svg>',
   posture:'<svg viewBox="0 0 24 24"><path d="M12 3.5v17"/><circle cx="12" cy="5.5" r="1.6"/><path d="M8.5 10h7M9.5 14h5M10.5 18h3"/></svg>',
-  prebreak:'<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5"/><path d="M12 8v4.5l3 2"/></svg>'
+  debt:'<svg viewBox="0 0 24 24"><path d="M4 13h5l2-6 3 10 2-4h4"/><path d="M4 18h16"/></svg>',
+  prebreak:'<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5"/><path d="M12 8v4.5l3 2"/></svg>',
+  skip:'<svg viewBox="0 0 24 24"><path d="M5 12h10M11 7l5 5-5 5"/><path d="M18 7v10"/></svg>'
 };
 const ACC = { clear:"#8cc6a6", accumulating:"#d7b16d", due:"#e07a5d" };
 const pick = a => a[Math.floor(Math.random()*a.length)];
+
+function showCountdown(secs) {
+  clearInterval(countdownTimer);
+  let n = secs || 5;
+  const txt = document.getElementById("txt");
+  const draw = () => { txt.textContent = `Break starts in ${n}`; n -= 1; };
+  draw();
+  countdownTimer = setInterval(() => {
+    if (n < 0) return clearInterval(countdownTimer);
+    draw();
+  }, 1000);
+}
+
 listen("nudge", e => {
-  const { kind, playful, state, secs } = e.payload;
+  const { kind, playful, state, secs, work_mins } = e.payload;
+  const voice = COPY[playful ? "playful" : "calm"];
+  const pill = document.getElementById("pill");
+  const action = document.getElementById("action");
+  clearInterval(countdownTimer);
   document.body.style.setProperty("--acc", ACC[state] || ACC.clear);
   document.getElementById("ttl").textContent = TTL[kind] || "";
-  document.getElementById("txt").textContent = pick(COPY[playful ? "playful" : "calm"][kind]);
   document.getElementById("glyph").innerHTML = GLYPH[kind] || GLYPH.prebreak;
-  document.getElementById("now").className = kind === "prebreak" ? "" : "hidden";
+  pill.classList.toggle("pulse", kind === "countdown");
+  action.className = kind === "skip" ? "" : "hidden";
+  if (kind === "countdown") {
+    showCountdown(secs || 5);
+  } else if (kind === "skip") {
+    document.getElementById("txt").textContent = "Skip this one or move away to begin.";
+  } else {
+    const deck = voice[kind] || voice.prebreak;
+    document.getElementById("txt").textContent = pick(deck).replace("{m}", work_mins || 45);
+  }
   const fuse = document.getElementById("fuse");
   fuse.className = "fuse"; void fuse.offsetWidth;
-  fuse.style.animationDuration = (secs || 8) + "s";
+  fuse.style.animationDuration = (secs || 7) + "s";
   fuse.className = "fuse run";
-  const p = document.getElementById("pill");
-  p.classList.remove("in"); void p.offsetWidth; p.classList.add("in");
+  pill.classList.remove("in"); void pill.offsetWidth; pill.classList.add("in");
 });
-document.getElementById("now").onclick = () => invoke("break_now");
+action.onclick = () => invoke("skip_pending_break");
 addEventListener("contextmenu", e => e.preventDefault());
 </script>
 </body>

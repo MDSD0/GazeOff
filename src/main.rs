@@ -8,8 +8,8 @@ use tauri::{
     image::Image,
     menu::{Menu, MenuItem},
     tray::{MouseButton, MouseButtonState, TrayIconBuilder, TrayIconEvent},
-    AppHandle, Emitter, Manager, PhysicalPosition, State, WebviewUrl, WebviewWindowBuilder,
-    WindowEvent,
+    AppHandle, Emitter, LogicalSize, Manager, PhysicalPosition, State, WebviewUrl,
+    WebviewWindowBuilder, WindowEvent,
 };
 
 // ---------- settings ----------
@@ -145,6 +145,9 @@ struct Engine {
     fs_until: u64, // smart-pause cooldown horizon
     debt: u32,     // consecutive skipped breaks
     shorts: u32,   // short breaks since last long one
+    cursor_countdown: bool,
+    skip_offer: bool,
+    debt_nudged_at: u32,
 }
 
 impl Engine {
@@ -262,6 +265,25 @@ fn fullscreen_foreground() -> bool {
         let m = mi.rcMonitor;
         r.left <= m.left && r.top <= m.top && r.right >= m.right && r.bottom >= m.bottom
     }
+}
+
+#[cfg(windows)]
+fn cursor_pos() -> Option<(i32, i32)> {
+    use windows_sys::Win32::Foundation::POINT;
+    use windows_sys::Win32::UI::WindowsAndMessaging::GetCursorPos;
+    unsafe {
+        let mut p = std::mem::zeroed::<POINT>();
+        if GetCursorPos(&mut p) == 0 {
+            None
+        } else {
+            Some((p.x, p.y))
+        }
+    }
+}
+
+#[cfg(not(windows))]
+fn cursor_pos() -> Option<(i32, i32)> {
+    None
 }
 
 #[cfg(windows)]
@@ -478,28 +500,69 @@ fn hide(app: &AppHandle, label: &str) {
     }
 }
 
+fn place_nudge_at(app: &AppHandle, x: i32, y: i32) {
+    if let Some(w) = app.get_webview_window("nudge") {
+        let sf = w.scale_factor().unwrap_or(1.0);
+        let Ok(size) = w.inner_size() else {
+            return;
+        };
+        let ww = size.width as i32;
+        let wh = size.height as i32;
+        let margin = (14.0 * sf) as i32;
+        let offset_x = (18.0 * sf) as i32;
+        let offset_y = (20.0 * sf) as i32;
+        let (mut nx, mut ny) = (x + offset_x, y + offset_y);
+        if let Ok(Some(mon)) = w.current_monitor().or_else(|_| app.primary_monitor()) {
+            let mp = mon.position();
+            let ms = mon.size();
+            let min_x = mp.x + margin;
+            let min_y = mp.y + margin;
+            let max_x = mp.x + ms.width as i32 - ww - margin;
+            let max_y = mp.y + ms.height as i32 - wh - margin;
+            nx = nx.clamp(min_x, max_x.max(min_x));
+            ny = ny.clamp(min_y, max_y.max(min_y));
+        }
+        let _ = w.set_position(PhysicalPosition::new(nx, ny));
+    }
+}
+
 fn show_nudge(app: &AppHandle, kind: &str, e: &mut Engine) {
-    let secs = if kind == "prebreak" { 12 } else { 8 };
+    let secs = match kind {
+        "countdown" => 5,
+        "skip" => 8,
+        "debt" => 6,
+        "prebreak" => 8,
+        _ => 7,
+    };
     e.nudge_until = now_epoch() + secs;
     if let Some(w) = app.get_webview_window("nudge") {
-        if let Ok(Some(mon)) = app.primary_monitor() {
-            let ms = mon.size();
-            let mp = mon.position();
-            let sf = mon.scale_factor();
-            let (ww, wh) = ((364.0 * sf) as i32, (104.0 * sf) as i32);
-            let _ = w.set_position(PhysicalPosition::new(
-                mp.x + ms.width as i32 - ww - (16.0 * sf) as i32,
-                mp.y + ms.height as i32 - wh - (60.0 * sf) as i32,
-            ));
+        let _ = w.set_size(LogicalSize::new(
+            if kind == "skip" { 286.0 } else { 314.0 },
+            76.0,
+        ));
+        if let Some((x, y)) = cursor_pos() {
+            place_nudge_at(app, x, y);
         }
         let _ = app.emit(
             "nudge",
             json!({
-                "kind": kind, "playful": e.s.playful, "state": e.state(), "secs": secs,
+                "kind": kind,
+                "playful": e.s.playful,
+                "state": e.state(),
+                "secs": secs,
+                "work_mins": e.work / 60,
             }),
         );
         let _ = w.show();
     }
+}
+
+fn start_pending_skip_offer(app: &AppHandle, e: &mut Engine) -> Option<(i32, i32, u64)> {
+    let (x, y) = cursor_pos()?;
+    e.skip_offer = true;
+    e.cursor_countdown = false;
+    show_nudge(app, "skip", e);
+    Some((x, y, now_epoch() + 8))
 }
 
 fn start_break(app: &AppHandle, e: &mut Engine) {
@@ -513,6 +576,9 @@ fn start_break(app: &AppHandle, e: &mut Engine) {
     e.brk = Some(Brk { long, dur, t: 0 });
     e.pending = false;
     e.warned = false;
+    e.cursor_countdown = false;
+    e.skip_offer = false;
+    e.nudge_until = 0;
     let _ = app.emit("snap", e.snap(now_epoch()));
     show_overlay(app);
     if e.s.display_off_break {
@@ -550,6 +616,8 @@ fn finish_break(e: &mut Engine, taken: bool) {
     };
     e.blink_t = 0;
     e.post_t = 0;
+    e.cursor_countdown = false;
+    e.skip_offer = false;
 }
 
 // ---------- commands ----------
@@ -588,6 +656,24 @@ fn skip_break(app: AppHandle, eng: State<Eng>) {
 }
 
 #[tauri::command]
+fn skip_pending_break(app: AppHandle, eng: State<Eng>) {
+    let mut e = eng.0.lock().unwrap();
+    if e.pending && e.brk.is_none() && e.skippable() {
+        e.day.skipped += 1;
+        e.debt += 1;
+        e.work = e.interval().saturating_sub(300);
+        e.pending = false;
+        e.warned = false;
+        e.cursor_countdown = false;
+        e.skip_offer = false;
+        e.nudge_until = 0;
+        save(&app, &e);
+        let _ = app.emit("snap", e.snap(now_epoch()));
+        hide(&app, "nudge");
+    }
+}
+
+#[tauri::command]
 fn delay_break(app: AppHandle, eng: State<Eng>, secs: u32) {
     let mut e = eng.0.lock().unwrap();
     if e.brk.is_some() && e.skippable() {
@@ -595,6 +681,8 @@ fn delay_break(app: AppHandle, eng: State<Eng>, secs: u32) {
         e.brk = None;
         e.pending = false;
         e.warned = false;
+        e.cursor_countdown = false;
+        e.skip_offer = false;
         e.work = e.interval().saturating_sub(secs);
         set_monitor_power(false);
         save(&app, &e);
@@ -634,7 +722,12 @@ fn toggle_pause(app: AppHandle, eng: State<Eng>) {
     if e.brk.is_some() {
         e.brk = None;
         set_monitor_power(false);
+        e.pending = false;
+        e.warned = false;
+        e.cursor_countdown = false;
+        e.skip_offer = false;
         hide(&app, "overlay");
+        hide(&app, "nudge");
     }
     let _ = app.emit("snap", e.snap(now));
 }
@@ -670,6 +763,7 @@ fn main() {
             get_settings,
             set_settings,
             skip_break,
+            skip_pending_break,
             delay_break,
             end_break,
             break_now,
@@ -711,7 +805,6 @@ fn main() {
                     .skip_taskbar(true)
                     .resizable(false)
                     .focused(false)
-                    .focusable(false)
                     .shadow(false)
                     .inner_size(364.0, 104.0)
                     .visible(false)
@@ -837,10 +930,14 @@ fn main() {
             std::thread::spawn(move || {
                 let mut last_icon = String::new();
                 let mut last_tip = String::new();
+                let mut skip_anchor: Option<(i32, i32, u64)> = None;
+                let mut skip_offer_until = 0u64;
+                let mut last_cursor = cursor_pos();
                 loop {
                     std::thread::sleep(std::time::Duration::from_secs(1));
                     let now = now_epoch();
                     let idle = idle_secs();
+                    let cur = cursor_pos();
                     let mut e = eng_tick.lock().unwrap();
 
                     // day rollover: score yesterday, start fresh
@@ -858,6 +955,7 @@ fn main() {
                             ..Default::default()
                         };
                         e.debt = 0;
+                        e.debt_nudged_at = 0;
                         save(&handle, &e);
                     }
 
@@ -868,6 +966,16 @@ fn main() {
                     let paused = now < e.paused_until || off_hours;
 
                     // nudge auto-dissolve
+                    if e.nudge_until != 0 && !e.skip_offer {
+                        if let (Some((lx, ly)), Some((x, y))) = (last_cursor, cur) {
+                            let dx = x - lx;
+                            let dy = y - ly;
+                            if dx * dx + dy * dy > 240 * 240 {
+                                e.nudge_until = 0;
+                                hide(&handle, "nudge");
+                            }
+                        }
+                    }
                     if e.nudge_until != 0 && now >= e.nudge_until {
                         e.nudge_until = 0;
                         hide(&handle, "nudge");
@@ -919,12 +1027,54 @@ fn main() {
                         if e.work >= iv {
                             e.pending = true;
                         }
+
+                        let countdown_window = e.work >= iv.saturating_sub(5) && e.work < iv;
+                        if e.s.prebreak && countdown_window && !e.cursor_countdown && !fs {
+                            e.cursor_countdown = true;
+                            e.warned = true;
+                            show_nudge(&handle, "countdown", &mut e);
+                        }
+                        if e.cursor_countdown && countdown_window {
+                            if let Some((x, y)) = cur {
+                                place_nudge_at(&handle, x, y);
+                            }
+                        }
+
                         // wait for a natural pause in input, and never interrupt fullscreen
-                        if e.pending && idle >= 2 && now >= e.fs_until && !fs {
-                            hide(&handle, "nudge");
-                            e.nudge_until = 0;
-                            start_break(&handle, &mut e);
+                        if e.pending && now >= e.fs_until && !fs {
+                            if e.skippable() && !e.skip_offer {
+                                skip_anchor = start_pending_skip_offer(&handle, &mut e);
+                                skip_offer_until =
+                                    skip_anchor.map(|(_, _, until)| until).unwrap_or(0);
+                            }
+
+                            let moved_away =
+                                if let (Some((ax, ay, _)), Some((x, y))) = (skip_anchor, cur) {
+                                    let dx = x - ax;
+                                    let dy = y - ay;
+                                    dx * dx + dy * dy > 150 * 150
+                                } else {
+                                    false
+                                };
+
+                            if !e.skippable()
+                                || moved_away
+                                || (skip_offer_until != 0 && now >= skip_offer_until)
+                            {
+                                hide(&handle, "nudge");
+                                e.nudge_until = 0;
+                                e.skip_offer = false;
+                                skip_anchor = None;
+                                skip_offer_until = 0;
+                                start_break(&handle, &mut e);
+                            }
                         } else if !e.pending && !fs {
+                            skip_anchor = None;
+                            skip_offer_until = 0;
+                            if e.debt > 0 && e.work >= 45 * 60 && e.work / 60 != e.debt_nudged_at {
+                                e.debt_nudged_at = e.work / 60;
+                                show_nudge(&handle, "debt", &mut e);
+                            }
                             if e.s.blink && e.blink_t >= e.s.blink_min.max(2) * 60 {
                                 e.blink_t = 0;
                                 show_nudge(&handle, "blink", &mut e);
@@ -949,6 +1099,7 @@ fn main() {
                     };
                     let snap = e.snap(now);
                     drop(e);
+                    last_cursor = cur;
 
                     if let Some(tray) = handle.tray_by_id("main") {
                         if key != last_icon {
