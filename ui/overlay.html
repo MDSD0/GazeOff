@@ -13,16 +13,30 @@
   body.in { opacity:1; }
   .wall {
     position:fixed; inset:-42px; background-image:var(--wallpaper),
-      linear-gradient(125deg,#b71469 0%,#8c3d97 30%,#41639a 58%,#04977f 100%);
+      linear-gradient(145deg,#22313a 0%,#344756 38%,#829c90 68%,#d59b66 100%);
     background-size:cover; background-position:center;
-    filter:blur(24px) saturate(1.22) brightness(.78); transform:scale(1.055);
+    filter:blur(24px) saturate(1.08) brightness(.74); transform:scale(1.055);
   }
   .wash {
     position:fixed; inset:0; pointer-events:none;
     background:
-      radial-gradient(70% 120% at 0% 22%, rgba(218,13,111,.54), transparent 62%),
-      radial-gradient(75% 105% at 100% 26%, rgba(0,191,145,.56), transparent 66%),
-      linear-gradient(120deg, rgba(173,41,131,.34), rgba(33,97,157,.34) 55%, rgba(0,148,119,.32));
+      radial-gradient(70% 120% at 0% 20%, rgba(128,185,216,.22), transparent 62%),
+      radial-gradient(75% 105% at 100% 24%, rgba(143,191,163,.24), transparent 66%),
+      radial-gradient(66% 54% at 50% 82%, rgba(240,181,111,.28), transparent 60%),
+      linear-gradient(180deg, rgba(18,28,34,.32), rgba(14,19,18,.50));
+  }
+  .horizon {
+    position:fixed; left:-8vw; right:-8vw; bottom:13vh; height:18vh; opacity:.54; pointer-events:none;
+    background:
+      radial-gradient(42vw 10vh at 28% 68%, rgba(231,236,229,.16), transparent 70%),
+      radial-gradient(46vw 12vh at 70% 54%, rgba(231,236,229,.13), transparent 72%),
+      linear-gradient(180deg, transparent 42%, rgba(255,255,255,.20) 43%, transparent 45%);
+    filter:blur(10px);
+    animation:horizon-breathe 18s ease-in-out infinite alternate;
+  }
+  @keyframes horizon-breathe {
+    from { transform:translateX(-1.2vw) translateY(0); opacity:.42; }
+    to { transform:translateX(1.2vw) translateY(-.8vh); opacity:.62; }
   }
   .grain {
     position:fixed; inset:0; pointer-events:none; opacity:.035; mix-blend-mode:overlay;
@@ -67,6 +81,10 @@
   button:hover { background:rgba(255,255,255,.32); }
   .esc { margin-top:4px; color:rgba(255,255,255,.34); font-size:13px; font-weight:650; }
   body.ret .center { opacity:.42; transform:translateY(-8px) scale(.985); transition:.9s ease; }
+  body.in .msg { animation:settle .9s cubic-bezier(.22,.8,.3,1) both; }
+  body.in .sub { animation:settle .9s cubic-bezier(.22,.8,.3,1) .08s both; }
+  body.in .count { animation:settle .9s cubic-bezier(.22,.8,.3,1) .16s both; }
+  @keyframes settle { from { opacity:0; transform:translateY(12px); } to { opacity:1; transform:none; } }
   @media (max-width:760px) {
     .msg { font-size:38px; }
     .sub { font-size:17px; }
@@ -77,6 +95,7 @@
 <body>
   <div class="wall"></div>
   <div class="wash"></div>
+  <div class="horizon"></div>
   <div class="grain"></div>
   <div class="time-now" id="clock"></div>
   <main class="center">
