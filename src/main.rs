@@ -28,14 +28,15 @@ struct Settings {
     blink_min: u32,
     posture: bool,
     posture_min: u32,
-    prebreak: bool,         // heads-up before breaks
-    lead_secs: u32,         // how far in advance
-    sound: bool,            // soft chime when a break completes
-    autostart: bool,        // launch with Windows
-    smart_fullscreen: bool, // hold breaks during fullscreen apps
-    cooldown_secs: u32,     // grace period after fullscreen ends
-    idle_pause: u32,        // stop counting after N seconds away
-    idle_reset: u32,        // treat N seconds away as a real break
+    prebreak: bool,          // heads-up before breaks
+    lead_secs: u32,          // how far in advance
+    sound: bool,             // soft chime when a break completes
+    autostart: bool,         // launch with Windows
+    smart_fullscreen: bool,  // hold breaks during fullscreen apps
+    display_off_break: bool, // black break surface + native monitor power-off
+    cooldown_secs: u32,      // grace period after fullscreen ends
+    idle_pause: u32,         // stop counting after N seconds away
+    idle_reset: u32,         // treat N seconds away as a real break
     hours_start: u32,
     hours_end: u32,
     days: u8, // bitmask, bit 0 = Sunday
@@ -60,6 +61,7 @@ impl Default for Settings {
             sound: true,
             autostart: false,
             smart_fullscreen: true,
+            display_off_break: false,
             cooldown_secs: 60,
             idle_pause: 60,
             idle_reset: 300,
@@ -178,6 +180,7 @@ impl Engine {
             "playful": self.s.playful,
             "mode": self.s.mode,
             "sound": self.s.sound,
+            "display_off_break": self.s.display_off_break,
             "returning": self.returning,
             "streak": self.streak,
             "day": {
@@ -364,6 +367,26 @@ fn set_autostart(on: bool) {
     };
 }
 
+#[cfg(windows)]
+fn set_monitor_power(off: bool) {
+    use windows_sys::Win32::UI::WindowsAndMessaging::{
+        SendMessageW, HWND_BROADCAST, SC_MONITORPOWER, WM_SYSCOMMAND,
+    };
+
+    let power_state = if off { 2isize } else { -1isize };
+    unsafe {
+        let _ = SendMessageW(
+            HWND_BROADCAST,
+            WM_SYSCOMMAND,
+            SC_MONITORPOWER as usize,
+            power_state,
+        );
+    }
+}
+
+#[cfg(not(windows))]
+fn set_monitor_power(_off: bool) {}
+
 // ---------- tray icon, drawn in code ----------
 
 fn tray_icon(state: &str, paused: bool) -> Image<'static> {
@@ -492,6 +515,9 @@ fn start_break(app: &AppHandle, e: &mut Engine) {
     e.warned = false;
     let _ = app.emit("snap", e.snap(now_epoch()));
     show_overlay(app);
+    if e.s.display_off_break {
+        set_monitor_power(true);
+    }
 }
 
 fn finish_break(e: &mut Engine, taken: bool) {
@@ -555,6 +581,7 @@ fn skip_break(app: AppHandle, eng: State<Eng>) {
     let mut e = eng.0.lock().unwrap();
     if e.brk.is_some() && e.skippable() {
         finish_break(&mut e, false);
+        set_monitor_power(false);
         save(&app, &e);
         hide(&app, "overlay");
     }
@@ -569,6 +596,7 @@ fn delay_break(app: AppHandle, eng: State<Eng>, secs: u32) {
         e.pending = false;
         e.warned = false;
         e.work = e.interval().saturating_sub(secs);
+        set_monitor_power(false);
         save(&app, &e);
         let _ = app.emit("snap", e.snap(now_epoch()));
         hide(&app, "overlay");
@@ -581,6 +609,7 @@ fn end_break(app: AppHandle, eng: State<Eng>) {
     if let Some(b) = &e.brk {
         if b.t >= b.dur * 7 / 10 {
             finish_break(&mut e, true);
+            set_monitor_power(false);
             save(&app, &e);
             let _ = app.emit("snap", e.snap(now_epoch()));
         }
@@ -604,6 +633,7 @@ fn toggle_pause(app: AppHandle, eng: State<Eng>) {
     e.paused_until = if now < e.paused_until { 0 } else { now + 3600 };
     if e.brk.is_some() {
         e.brk = None;
+        set_monitor_power(false);
         hide(&app, "overlay");
     }
     let _ = app.emit("snap", e.snap(now));
@@ -623,6 +653,11 @@ fn wallpaper_data_url() -> Option<String> {
     current_wallpaper_data_url()
 }
 
+#[tauri::command]
+fn turn_off_display_now() {
+    set_monitor_power(true);
+}
+
 // ---------- main ----------
 
 fn main() {
@@ -640,7 +675,8 @@ fn main() {
             break_now,
             toggle_pause,
             open_settings,
-            wallpaper_data_url
+            wallpaper_data_url,
+            turn_off_display_now
         ])
         .setup(move |app| {
             let handle = app.handle().clone();
@@ -704,8 +740,7 @@ fn main() {
             square_window(&panel);
             square_window(&settings);
 
-            // native frost
-            let _ = window_vibrancy::apply_acrylic(&panel, Some((20, 20, 19, 215)));
+            // Native frost only where it is intentionally borderless.
             let _ = window_vibrancy::apply_acrylic(&nudge, Some((22, 21, 19, 190)));
 
             // overlay & settings never truly close — they hide
@@ -754,6 +789,7 @@ fn main() {
                         e.paused_until = now_epoch() + 3600;
                         if e.brk.is_some() {
                             e.brk = None;
+                            set_monitor_power(false);
                             hide(app, "overlay");
                         }
                     }
@@ -841,6 +877,7 @@ fn main() {
                         b.t += 1;
                         if b.t >= b.dur {
                             finish_break(&mut e, true);
+                            set_monitor_power(false);
                             save(&handle, &e);
                         }
                     } else if e.returning > 0 {

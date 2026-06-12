@@ -5,121 +5,210 @@
 <style>
   * { box-sizing:border-box; margin:0; padding:0; user-select:none; cursor:default; }
   html,body {
-    width:100%; height:100%; overflow:hidden; background:#111518; color:#fff;
+    width:100%; height:100%; overflow:hidden; background:#090c0d; color:#fff;
     font-family:"Segoe UI Variable Display","Segoe UI",system-ui,sans-serif;
-    --wallpaper:none; --accent:#ffffff;
+    --wallpaper:none;
   }
-  body { opacity:0; transition:opacity .9s cubic-bezier(.25,.1,.25,1); }
+  body { opacity:0; transition:opacity .7s cubic-bezier(.2,.8,.2,1), background .7s ease; }
   body.in { opacity:1; }
   .wall {
-    position:fixed; inset:-42px; background-image:var(--wallpaper),
-      linear-gradient(145deg,#22313a 0%,#344756 38%,#829c90 68%,#d59b66 100%);
+    position:fixed; inset:-46px;
+    background-image:var(--wallpaper),
+      linear-gradient(145deg,#16272d 0%,#24404d 36%,#496d5d 64%,#d79663 100%);
     background-size:cover; background-position:center;
-    filter:blur(24px) saturate(1.08) brightness(.74); transform:scale(1.055);
+    filter:blur(26px) saturate(1.12) brightness(.72); transform:scale(1.06);
+    transition:opacity .45s ease;
   }
   .wash {
-    position:fixed; inset:0; pointer-events:none;
+    position:fixed; inset:0; pointer-events:none; transition:opacity .45s ease;
     background:
-      radial-gradient(70% 120% at 0% 20%, rgba(128,185,216,.22), transparent 62%),
-      radial-gradient(75% 105% at 100% 24%, rgba(143,191,163,.24), transparent 66%),
-      radial-gradient(66% 54% at 50% 82%, rgba(240,181,111,.28), transparent 60%),
-      linear-gradient(180deg, rgba(18,28,34,.32), rgba(14,19,18,.50));
+      radial-gradient(58% 86% at 18% 14%, rgba(138,190,218,.26), transparent 62%),
+      radial-gradient(58% 72% at 80% 24%, rgba(126,179,145,.24), transparent 66%),
+      radial-gradient(70% 46% at 50% 86%, rgba(231,164,92,.32), transparent 62%),
+      linear-gradient(180deg, rgba(8,16,18,.24), rgba(6,9,8,.56));
+  }
+  .stars {
+    position:fixed; inset:0; pointer-events:none; opacity:.32; transition:opacity .45s ease;
+    background:
+      radial-gradient(circle at 16% 24%, rgba(255,255,255,.72) 0 1px, transparent 1.4px),
+      radial-gradient(circle at 68% 16%, rgba(255,255,255,.55) 0 1px, transparent 1.4px),
+      radial-gradient(circle at 84% 38%, rgba(255,255,255,.42) 0 1px, transparent 1.4px),
+      radial-gradient(circle at 36% 12%, rgba(255,255,255,.46) 0 1px, transparent 1.4px);
+    animation:star-drift 28s linear infinite alternate;
   }
   .horizon {
-    position:fixed; left:-8vw; right:-8vw; bottom:13vh; height:18vh; opacity:.54; pointer-events:none;
+    position:fixed; left:-8vw; right:-8vw; bottom:12vh; height:22vh; opacity:.62; pointer-events:none;
     background:
-      radial-gradient(42vw 10vh at 28% 68%, rgba(231,236,229,.16), transparent 70%),
-      radial-gradient(46vw 12vh at 70% 54%, rgba(231,236,229,.13), transparent 72%),
-      linear-gradient(180deg, transparent 42%, rgba(255,255,255,.20) 43%, transparent 45%);
-    filter:blur(10px);
-    animation:horizon-breathe 18s ease-in-out infinite alternate;
-  }
-  @keyframes horizon-breathe {
-    from { transform:translateX(-1.2vw) translateY(0); opacity:.42; }
-    to { transform:translateX(1.2vw) translateY(-.8vh); opacity:.62; }
+      radial-gradient(42vw 10vh at 30% 64%, rgba(232,238,231,.16), transparent 70%),
+      radial-gradient(46vw 11vh at 70% 56%, rgba(232,238,231,.13), transparent 72%),
+      linear-gradient(180deg, transparent 44%, rgba(255,255,255,.22) 45%, transparent 47%);
+    filter:blur(11px);
+    animation:horizon-breathe 16s ease-in-out infinite alternate;
+    transition:opacity .45s ease;
   }
   .grain {
-    position:fixed; inset:0; pointer-events:none; opacity:.035; mix-blend-mode:overlay;
+    position:fixed; inset:0; pointer-events:none; opacity:.034; mix-blend-mode:overlay;
     background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.82' numOctaves='2'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+    transition:opacity .45s ease;
   }
   .time-now {
-    position:fixed; top:70px; left:0; right:0; text-align:center;
-    font-size:17px; font-weight:760; color:rgba(255,255,255,.86);
-    text-shadow:0 2px 18px rgba(0,0,0,.25);
+    position:fixed; top:64px; left:0; right:0; text-align:center;
+    font-size:16px; font-weight:750; color:rgba(255,255,255,.78);
+    text-shadow:0 2px 18px rgba(0,0,0,.24);
+    transition:opacity .45s ease;
   }
   .center {
     position:fixed; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center;
-    transform:translateY(-8px); text-align:center; padding:0 64px;
+    transform:translateY(-10px); text-align:center; padding:0 64px;
   }
   .msg {
-    max-width:980px; font-size:54px; line-height:1.12; font-weight:820; letter-spacing:0;
-    text-shadow:0 3px 30px rgba(0,0,0,.20);
+    max-width:960px; font-size:54px; line-height:1.11; font-weight:820; letter-spacing:0;
+    text-shadow:0 3px 30px rgba(0,0,0,.22); transition:opacity .45s ease;
   }
   .sub {
-    margin-top:24px; font-family:"Segoe UI Variable Text","Segoe UI",system-ui,sans-serif;
-    font-size:20px; line-height:1.35; font-weight:690; color:rgba(255,255,255,.84);
-    text-shadow:0 2px 22px rgba(0,0,0,.20);
+    margin-top:22px; font-family:"Segoe UI Variable Text","Segoe UI",system-ui,sans-serif;
+    font-size:20px; line-height:1.35; font-weight:660; color:rgba(255,255,255,.80);
+    text-shadow:0 2px 22px rgba(0,0,0,.20); transition:opacity .45s ease;
   }
-  .rule { width:164px; height:1px; background:rgba(255,255,255,.26); margin:38px 0 30px; }
-  .count {
-    font-size:42px; line-height:1; font-weight:820; letter-spacing:.03em;
-    color:rgba(255,255,255,.52); font-variant-numeric:tabular-nums;
+  .timer-wrap {
+    position:relative; width:252px; height:252px; margin-top:42px;
+    display:grid; place-items:center; color:white;
+    animation:breathe 5.6s ease-in-out infinite;
+  }
+  .timer-wrap:before {
+    content:""; position:absolute; inset:20px; border-radius:50%;
+    background:radial-gradient(circle, rgba(255,255,255,.08), rgba(255,255,255,.02) 54%, transparent 70%);
+    filter:blur(2px);
+  }
+  svg.ring { position:absolute; inset:0; width:100%; height:100%; transform:rotate(-90deg); overflow:visible; }
+  .track { fill:none; stroke:rgba(255,255,255,.15); stroke-width:7; }
+  .progress {
+    fill:none; stroke:rgba(236,243,236,.88); stroke-width:7; stroke-linecap:round;
+    stroke-dasharray:703.72; stroke-dashoffset:703.72;
+    filter:drop-shadow(0 0 18px rgba(214,237,224,.28));
+    transition:stroke-dashoffset .95s linear;
+  }
+  .time {
+    position:relative; font-size:44px; line-height:1; font-weight:830; letter-spacing:.03em;
+    font-variant-numeric:tabular-nums; color:rgba(255,255,255,.91);
+  }
+  .ring-label {
+    position:relative; margin-top:9px; font-family:"Segoe UI Variable Text","Segoe UI",system-ui,sans-serif;
+    font-size:12px; font-weight:760; text-transform:uppercase; letter-spacing:.12em; color:rgba(255,255,255,.46);
   }
   .actions {
-    position:fixed; left:0; right:0; bottom:78px; display:flex; flex-direction:column; align-items:center; gap:10px;
+    position:fixed; left:0; right:0; bottom:70px; display:flex; flex-direction:column; align-items:center; gap:10px;
     font-family:"Segoe UI Variable Text","Segoe UI",system-ui,sans-serif;
+    transition:opacity .45s ease, transform .45s ease;
   }
-  .row { display:flex; gap:10px; }
+  .row { display:flex; align-items:flex-end; justify-content:center; gap:10px; min-height:86px; }
   button {
-    min-width:130px; height:39px; border:0; border-radius:999px; padding:0 22px;
+    min-width:136px; height:40px; border:0; border-radius:999px; padding:0 22px;
     display:none; align-items:center; justify-content:center; gap:8px;
-    color:white; background:rgba(255,255,255,.22);
-    box-shadow:inset 0 1px 0 rgba(255,255,255,.18), 0 8px 30px rgba(0,0,0,.13);
+    color:white; background:rgba(255,255,255,.20);
+    box-shadow:inset 0 1px 0 rgba(255,255,255,.20), 0 12px 34px rgba(0,0,0,.17);
     backdrop-filter:blur(18px); font:inherit; font-size:15px; font-weight:820; cursor:pointer;
+    transition:transform .18s ease, background .18s ease, opacity .18s ease;
   }
   button.on { display:flex; }
-  button:hover { background:rgba(255,255,255,.32); }
-  .esc { margin-top:4px; color:rgba(255,255,255,.34); font-size:13px; font-weight:650; }
-  body.ret .center { opacity:.42; transform:translateY(-8px) scale(.985); transition:.9s ease; }
-  body.in .msg { animation:settle .9s cubic-bezier(.22,.8,.3,1) both; }
-  body.in .sub { animation:settle .9s cubic-bezier(.22,.8,.3,1) .08s both; }
-  body.in .count { animation:settle .9s cubic-bezier(.22,.8,.3,1) .16s both; }
+  button:hover { transform:translateY(-1px); background:rgba(255,255,255,.31); }
+  .skip-wrap { position:relative; display:flex; justify-content:center; padding-top:46px; }
+  .delay-menu {
+    position:absolute; left:50%; bottom:48px; transform:translate(-50%, 10px) scale(.96);
+    display:flex; flex-direction:column; gap:8px; opacity:0; pointer-events:none;
+    transition:opacity .2s ease, transform .2s cubic-bezier(.2,.8,.2,1);
+  }
+  .skip-wrap:hover .delay-menu, .skip-wrap:focus-within .delay-menu {
+    opacity:1; pointer-events:auto; transform:translate(-50%, 0) scale(1);
+  }
+  .delay-menu button {
+    display:flex; min-width:118px; height:35px; font-size:14px; background:rgba(255,255,255,.17);
+  }
+  .display-btn { min-width:152px; background:rgba(6,9,8,.42); }
+  .esc { margin-top:-2px; color:rgba(255,255,255,.34); font-size:13px; font-weight:650; }
+  body.ret .center { opacity:.44; transform:translateY(-10px) scale(.985); transition:.9s ease; }
+  body.in .msg { animation:settle .72s cubic-bezier(.22,.8,.3,1) both; }
+  body.in .sub { animation:settle .72s cubic-bezier(.22,.8,.3,1) .07s both; }
+  body.in .timer-wrap { animation:breathe 5.6s ease-in-out infinite, settle .78s cubic-bezier(.22,.8,.3,1) .12s both; }
+  body.display-off { background:#000; }
+  body.display-off .wall, body.display-off .wash, body.display-off .stars,
+  body.display-off .horizon, body.display-off .grain, body.display-off .time-now,
+  body.display-off .msg, body.display-off .sub, body.display-off .actions {
+    opacity:0; pointer-events:none;
+  }
+  body.display-off .center { transform:none; }
+  body.display-off .timer-wrap { margin-top:0; width:286px; height:286px; }
+  body.display-off .track { stroke:rgba(255,255,255,.10); }
+  body.display-off .progress { stroke:rgba(255,255,255,.86); filter:drop-shadow(0 0 18px rgba(255,255,255,.14)); }
+  body.display-off .time { font-size:50px; color:rgba(255,255,255,.94); }
+  body.display-off .ring-label { color:rgba(255,255,255,.38); }
   @keyframes settle { from { opacity:0; transform:translateY(12px); } to { opacity:1; transform:none; } }
+  @keyframes breathe {
+    0%,100% { transform:scale(.985); filter:drop-shadow(0 0 12px rgba(214,237,224,.12)); }
+    50% { transform:scale(1.025); filter:drop-shadow(0 0 28px rgba(214,237,224,.26)); }
+  }
+  @keyframes horizon-breathe {
+    from { transform:translateX(-1.2vw) translateY(0); opacity:.42; }
+    to { transform:translateX(1.2vw) translateY(-.8vh); opacity:.66; }
+  }
+  @keyframes star-drift {
+    from { transform:translate3d(-8px, 0, 0); }
+    to { transform:translate3d(8px, -6px, 0); }
+  }
   @media (max-width:760px) {
     .msg { font-size:38px; }
     .sub { font-size:17px; }
-    .count { font-size:36px; }
+    .timer-wrap { width:218px; height:218px; }
+    .time { font-size:38px; }
+    .row { flex-direction:column; align-items:center; }
   }
 </style>
 </head>
 <body>
   <div class="wall"></div>
   <div class="wash"></div>
+  <div class="stars"></div>
   <div class="horizon"></div>
   <div class="grain"></div>
   <div class="time-now" id="clock"></div>
   <main class="center">
     <div class="msg" id="msg"></div>
     <div class="sub" id="sub"></div>
-    <div class="rule"></div>
-    <div class="count" id="time"></div>
+    <div class="timer-wrap">
+      <svg class="ring" viewBox="0 0 252 252" aria-hidden="true">
+        <circle class="track" cx="126" cy="126" r="112"></circle>
+        <circle class="progress" id="progress" cx="126" cy="126" r="112"></circle>
+      </svg>
+      <div>
+        <div class="time" id="time"></div>
+        <div class="ring-label" id="ringLabel">breathe</div>
+      </div>
+    </div>
   </main>
   <div class="actions">
-    <button id="delay1">+ 1 min</button>
-    <button id="delay5">+ 5 min</button>
-    <div class="row"><button id="btn"></button></div>
+    <div class="row">
+      <div class="skip-wrap">
+        <div class="delay-menu" id="delayMenu">
+          <button id="delay1">+ 1 min</button>
+          <button id="delay5">+ 5 min</button>
+        </div>
+        <button id="btn"></button>
+      </div>
+      <button class="display-btn" id="displayOff">Turn off display</button>
+    </div>
     <div class="esc" id="esc">Press Esc to skip the break</div>
   </div>
 
 <script>
 const { invoke } = window.__TAURI__.core;
 const { listen } = window.__TAURI__.event;
+const CIRC = 703.72;
 
 const COPY = {
   calm: {
-    short:["Rest now, resume shortly.","Eyes away. The screen can wait.","Look far away for a moment."],
+    short:["Rest now, resume shortly.","Eyes to the horizon.","Look far. Let the room come back."],
     long:["Step away for a few minutes.","Stand up. Move slowly. Come back fresh.","Leave the desk. This is the reset."],
-    due:["Rest now, resume shortly.","This break matters. Let it land.","Long stretch detected. Take this one."],
+    due:["This break matters. Let it land.","Long stretch detected. Take this one.","Rest now. The work can wait."],
     ret:["Welcome back.","Start fresh.","One slow blink, then go."],
     sub_short:"Set your eyes on something distant until the countdown is over",
     sub_long:"Step away from the desk until the countdown is over",
@@ -136,6 +225,7 @@ const COPY = {
 const pick = a => a[Math.floor(Math.random()*a.length)];
 const fmt = s => `${String(Math.floor(s/60)).padStart(2,"0")}:${String(s%60).padStart(2,"0")}`;
 let active = false, retShown = false, lastDeck = "";
+let localDisplayOff = false;
 
 function tickClock() {
   const d = new Date();
@@ -157,56 +247,73 @@ function chime() {
   } catch (_) {}
 }
 
+function setRing(brk) {
+  const left = Math.max(0, brk.dur - brk.t);
+  const pct = Math.min(1, Math.max(0, brk.t / Math.max(1, brk.dur)));
+  document.getElementById("time").textContent = fmt(left);
+  document.getElementById("progress").style.strokeDashoffset = String(CIRC * (1 - pct));
+}
+
 function render(s) {
   const voice = COPY[s.playful ? "playful" : "calm"];
   const btn = document.getElementById("btn");
-  const delay1 = document.getElementById("delay1");
-  const delay5 = document.getElementById("delay5");
+  const displayOff = document.getElementById("displayOff");
+  const delayMenu = document.getElementById("delayMenu");
   if (s.brk) {
+    const blackMode = !!s.display_off_break || localDisplayOff;
+    document.body.classList.toggle("display-off", blackMode);
     const deckKey = `${s.state}-${s.brk.long}-${s.playful}`;
     if (!active || deckKey !== lastDeck) {
-      active = true; retShown = false; lastDeck = deckKey;
+      active = true; retShown = false; lastDeck = deckKey; localDisplayOff = false;
       document.body.classList.remove("ret");
       const deck = s.state === "due" && !s.brk.long ? voice.due : (s.brk.long ? voice.long : voice.short);
       document.getElementById("msg").textContent = pick(deck);
       document.getElementById("sub").textContent = s.brk.long ? voice.sub_long : voice.sub_short;
       document.body.classList.add("in");
     }
-    document.getElementById("time").textContent = fmt(Math.max(0, s.brk.dur - s.brk.t));
-    if (s.brk.skippable && s.brk.t >= s.brk.skip_at) {
-      delay1.className = "on"; delay5.className = "on";
-    } else {
-      delay1.className = ""; delay5.className = "";
-    }
+    setRing(s.brk);
+    document.getElementById("ringLabel").textContent = s.brk.long ? "move softly" : "breathe";
+    const ready = s.brk.skippable && s.brk.t >= s.brk.skip_at;
+    delayMenu.style.display = ready ? "flex" : "none";
+    displayOff.className = "display-btn on";
     if (s.brk.t >= s.brk.end_at) {
       btn.textContent = "End Break"; btn.className = "on"; btn.onclick = () => invoke("end_break");
       document.getElementById("esc").textContent = "You can end this break early";
-    } else if (s.brk.skippable && s.brk.t >= s.brk.skip_at) {
+    } else if (ready) {
       btn.textContent = "Skip Break"; btn.className = "on"; btn.onclick = () => invoke("skip_break");
-      document.getElementById("esc").textContent = "Press Esc to skip the break";
+      document.getElementById("esc").textContent = "Hover Skip Break for 1 or 5 more minutes";
     } else {
       btn.className = ""; document.getElementById("esc").textContent = "";
     }
   } else if (s.returning > 0) {
+    document.body.classList.remove("display-off");
+    localDisplayOff = false;
     if (!retShown) {
       retShown = true; active = false;
       if (s.sound) chime();
       document.body.classList.add("ret");
       document.getElementById("msg").textContent = pick(voice.ret);
       document.getElementById("sub").textContent = "";
+      document.getElementById("ringLabel").textContent = "return";
       document.getElementById("time").textContent = "";
-      btn.className = ""; delay1.className = ""; delay5.className = "";
+      document.getElementById("progress").style.strokeDashoffset = String(CIRC);
+      btn.className = ""; displayOff.className = "display-btn"; delayMenu.style.display = "none";
       document.getElementById("esc").textContent = "";
     }
     if (s.returning <= 1) document.body.classList.remove("in");
   } else {
-    active = false; retShown = false; lastDeck = "";
-    document.body.classList.remove("in", "ret");
+    active = false; retShown = false; lastDeck = ""; localDisplayOff = false;
+    document.body.classList.remove("in", "ret", "display-off");
   }
 }
 
 document.getElementById("delay1").onclick = () => invoke("delay_break", { secs: 60 });
 document.getElementById("delay5").onclick = () => invoke("delay_break", { secs: 300 });
+document.getElementById("displayOff").onclick = () => {
+  localDisplayOff = true;
+  document.body.classList.add("display-off");
+  invoke("turn_off_display_now");
+};
 listen("snap", e => render(e.payload));
 invoke("snapshot").then(render);
 invoke("wallpaper_data_url").then(url => {

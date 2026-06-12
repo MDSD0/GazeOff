@@ -245,6 +245,7 @@
         <div class="group">
           <div class="row appearance-row"><div class="label">Background</div><div class="bg-options"><div class="bg-opt"><div class="thumb drop">Drop</div>Custom Image</div><div class="bg-opt"><div class="thumb wall sel"></div>Wallpaper</div><div class="bg-opt"><div class="thumb"></div>Gradient</div></div></div>
           <div class="row"><div class="label">Blur background</div><label class="switch"><input type="checkbox" checked disabled><span class="knob"></span></label></div>
+          <div class="row tall"><div class="label">Turn off display during breaks<div class="hint">Uses a black timer surface, then asks Windows to power the monitor down until the break ends.</div></div><label class="switch"><input type="checkbox" id="display_off_break"><span class="knob"></span></label></div>
         </div>
         <h2>Voice</h2>
         <div class="group">
@@ -306,7 +307,7 @@ const SAMPLES = {
 };
 let s = null, timer = null, sampleIdx = 0;
 const $ = id => document.getElementById(id);
-const TOGGLES = ["force_due","playful","blink","posture","prebreak","smart_fullscreen","autostart","sound"];
+const TOGGLES = ["force_due","playful","blink","posture","prebreak","smart_fullscreen","autostart","sound","display_off_break"];
 const RANGES = ["interval_min","short_secs","long_every","long_min","blink_min","posture_min"];
 const SELECTS = ["lead_secs","cooldown_secs","idle_pause","idle_reset","hours_start","hours_end"];
 
