@@ -561,6 +561,21 @@ fn skip_break(app: AppHandle, eng: State<Eng>) {
 }
 
 #[tauri::command]
+fn delay_break(app: AppHandle, eng: State<Eng>, secs: u32) {
+    let mut e = eng.0.lock().unwrap();
+    if e.brk.is_some() && e.skippable() {
+        let secs = secs.clamp(60, 300);
+        e.brk = None;
+        e.pending = false;
+        e.warned = false;
+        e.work = e.interval().saturating_sub(secs);
+        save(&app, &e);
+        let _ = app.emit("snap", e.snap(now_epoch()));
+        hide(&app, "overlay");
+    }
+}
+
+#[tauri::command]
 fn end_break(app: AppHandle, eng: State<Eng>) {
     let mut e = eng.0.lock().unwrap();
     if let Some(b) = &e.brk {
@@ -620,6 +635,7 @@ fn main() {
             get_settings,
             set_settings,
             skip_break,
+            delay_break,
             end_break,
             break_now,
             toggle_pause,
@@ -671,15 +687,15 @@ fn main() {
                     .always_on_top(true)
                     .skip_taskbar(true)
                     .resizable(false)
-                    .inner_size(324.0, 532.0)
+                    .inner_size(420.0, 560.0)
                     .visible(false)
                     .build()?;
             let settings =
                 WebviewWindowBuilder::new(app, "settings", WebviewUrl::App("settings.html".into()))
-                    .transparent(true)
+                    .transparent(false)
                     .decorations(false)
                     .resizable(false)
-                    .inner_size(680.0, 760.0)
+                    .inner_size(1120.0, 760.0)
                     .center()
                     .visible(false)
                     .build()?;
@@ -689,8 +705,7 @@ fn main() {
             square_window(&settings);
 
             // native frost
-            let _ = window_vibrancy::apply_acrylic(&panel, Some((22, 21, 19, 190)));
-            let _ = window_vibrancy::apply_acrylic(&settings, Some((22, 21, 19, 200)));
+            let _ = window_vibrancy::apply_acrylic(&panel, Some((20, 20, 19, 215)));
             let _ = window_vibrancy::apply_acrylic(&nudge, Some((22, 21, 19, 190)));
 
             // overlay & settings never truly close — they hide

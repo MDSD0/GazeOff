@@ -1,43 +1,46 @@
 <!doctype html>
-<html><head><meta charset="utf-8"><style>
-  * { margin:0; padding:0; box-sizing:border-box; user-select:none; }
-  html,body { width:100%; height:100%; background:transparent; overflow:hidden;
-    font-family:'Segoe UI Variable Text','Segoe UI',sans-serif; color:#e9e5de;
-    --acc:#9eb6a8; --accSoft:rgba(158,182,168,.25); }
-  .pill { position:fixed; inset:0; border-radius:8px; overflow:hidden;
-    border:1px solid rgba(255,255,255,.12);
+<html>
+<head>
+<meta charset="utf-8">
+<style>
+  * { box-sizing:border-box; margin:0; padding:0; user-select:none; }
+  html,body {
+    width:100%; height:100%; overflow:hidden; background:transparent;
+    font-family:"Segoe UI Variable Text","Segoe UI",system-ui,sans-serif; color:#f4f4f0;
+    --acc:#8cc6a6;
+  }
+  .pill {
+    position:fixed; inset:0; border-radius:13px; overflow:hidden;
+    border:1px solid rgba(255,255,255,.14);
     background:
-      radial-gradient(100% 90% at 0% 0%, rgba(174,206,197,.14), transparent 55%),
-      linear-gradient(135deg, rgba(24,32,34,.95), rgba(18,22,22,.89));
-    box-shadow:0 10px 40px rgba(0,0,0,.45), inset 0 1px 0 rgba(255,255,255,.06);
-    display:flex; align-items:center; gap:14px; padding:0 18px 0 16px;
-    opacity:0; transform:translateY(8px);
-    transition:opacity .8s cubic-bezier(.22,.8,.3,1), transform .8s cubic-bezier(.22,.8,.3,1); }
+      radial-gradient(120% 120% at 0% 0%, color-mix(in srgb, var(--acc) 28%, transparent), transparent 55%),
+      rgba(29,30,28,.96);
+    box-shadow:0 18px 46px rgba(0,0,0,.44), inset 0 1px 0 rgba(255,255,255,.12);
+    display:flex; align-items:center; gap:13px; padding:0 16px;
+    opacity:0; transform:translateY(8px) scale(.98);
+    transition:opacity .48s cubic-bezier(.22,.8,.3,1), transform .48s cubic-bezier(.22,.8,.3,1);
+  }
   .pill.in { opacity:1; transform:none; }
-  .pill::before { content:""; position:absolute; left:0; top:14px; bottom:14px; width:3px;
-    border-radius:0 3px 3px 0; background:var(--acc); opacity:.8;
-    box-shadow:0 0 12px var(--accSoft); }
-  .glyph { width:38px; height:38px; flex:none; border-radius:8px;
-    background:rgba(255,255,255,.05); border:1px solid rgba(255,255,255,.08);
-    display:flex; align-items:center; justify-content:center; }
-  .glyph svg { width:20px; height:20px; stroke:var(--acc); fill:none;
-    stroke-width:1.6; stroke-linecap:round; stroke-linejoin:round; }
+  .glyph {
+    width:38px; height:38px; border-radius:10px; display:grid; place-items:center;
+    background:linear-gradient(135deg,var(--acc),rgba(255,255,255,.16));
+    box-shadow:inset 0 1px 0 rgba(255,255,255,.28), 0 5px 18px rgba(0,0,0,.24);
+    flex:none;
+  }
+  .glyph svg { width:22px; height:22px; stroke:white; fill:none; stroke-width:2.2; stroke-linecap:round; stroke-linejoin:round; }
   .col { flex:1; min-width:0; }
-  .ttl { font-size:10px; font-weight:600; letter-spacing:.18em; text-transform:uppercase;
-    color:rgba(233,229,222,.38); margin-bottom:3px; }
-  .txt { font-size:13.5px; line-height:1.35; color:rgba(233,229,222,.88); }
-  button { font:inherit; font-size:12.5px; flex:none; cursor:pointer;
-    color:rgba(233,229,222,.78); background:rgba(255,255,255,.07);
-    border:1px solid rgba(255,255,255,.14); border-radius:999px; padding:7px 15px;
-    transition:background .2s, color .2s; }
-  button:hover { background:rgba(255,255,255,.16); color:#f2efe9; }
+  .ttl { font-size:12px; color:rgba(244,244,240,.48); font-weight:820; margin-bottom:2px; }
+  .txt { font-size:15px; line-height:1.28; color:#f4f4f0; font-weight:690; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  button {
+    height:32px; border:0; border-radius:999px; padding:0 16px; color:white; background:#087cff;
+    font:inherit; font-size:14px; font-weight:780; cursor:pointer; flex:none;
+  }
   button.hidden { display:none; }
-  .fuse { position:absolute; bottom:0; left:0; height:2px; width:100%;
-    background:linear-gradient(90deg, var(--acc), transparent);
-    opacity:.45; transform-origin:left; }
+  .fuse { position:absolute; left:0; bottom:0; height:2px; width:100%; background:linear-gradient(90deg,var(--acc),transparent); opacity:.7; transform-origin:left; }
   .fuse.run { animation:burn linear forwards; }
   @keyframes burn { from { transform:scaleX(1); } to { transform:scaleX(0); } }
-</style></head>
+</style>
+</head>
 <body>
   <div class="pill" id="pill">
     <div class="glyph" id="glyph"></div>
@@ -50,34 +53,27 @@ const { invoke } = window.__TAURI__.core;
 const { listen } = window.__TAURI__.event;
 const COPY = {
   calm: {
-    prebreak: ["A break is coming in a minute.","Good time to find a stopping point.","One minute to a short rest."],
-    blink: ["Blink slowly. Twice.","Close your eyes for one breath.","A few full blinks. Let them rest a second."],
-    posture: ["Drop your shoulders. Unclench your jaw.","Sit tall. Feet flat.","Roll your shoulders back, once."]
+    prebreak:["A break is coming in a minute.","Good time to find a stopping point.","One minute to a short rest."],
+    blink:["Blink slowly. Twice.","Close your eyes for one breath.","A few full blinks. Let them rest."],
+    posture:["Drop your shoulders. Unclench your jaw.","Sit tall. Feet flat.","Roll your shoulders back once."]
   },
   playful: {
-    prebreak: ["Break incoming in a min. Wrap the thought.","60 seconds till touch-grass o'clock.","Find a save point. Break soon."],
-    blink: ["Blink. No, actually blink. Full blink.","Your blink rate is in shambles. Fix it."],
-    posture: ["Unshrimp yourself.","Shoulders are not earrings. Drop them.","Posture check. You know what you did."]
+    prebreak:["Break incoming. Wrap the thought.","Find a save point. Break soon.","Sixty seconds till rest."],
+    blink:["Blink. No, actually blink.","Your blink rate is in shambles. Fix it."],
+    posture:["Unshrimp yourself.","Shoulders are not earrings. Drop them.","Posture check. You know what you did."]
   }
 };
-const TTL = { prebreak:"Heads-up", blink:"Blink", posture:"Posture" };
+const TTL = { prebreak:"Break soon", blink:"Blink", posture:"Posture" };
 const GLYPH = {
-  // a resting eye
-  blink: '<svg viewBox="0 0 24 24"><path d="M3 12c2.5 3.8 6 5.6 9 5.6s6.5-1.8 9-5.6"/><path d="M7 15.5l-1.6 2M12 17.6V20M17 15.5l1.6 2"/></svg>',
-  // a straightening spine
-  posture: '<svg viewBox="0 0 24 24"><path d="M12 3.5v17"/><circle cx="12" cy="5.5" r="1.6"/><path d="M8.5 10h7M9.5 14h5M10.5 18h3"/></svg>',
-  // a filling ring
-  prebreak: '<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5" opacity=".35"/><path d="M12 3.5a8.5 8.5 0 0 1 8.5 8.5"/><path d="M12 8v4.5l3 2"/></svg>'
+  blink:'<svg viewBox="0 0 24 24"><path d="M3 12c2.5 3.8 6 5.6 9 5.6s6.5-1.8 9-5.6"/><path d="M7 15.5l-1.6 2M12 17.6V20M17 15.5l1.6 2"/></svg>',
+  posture:'<svg viewBox="0 0 24 24"><path d="M12 3.5v17"/><circle cx="12" cy="5.5" r="1.6"/><path d="M8.5 10h7M9.5 14h5M10.5 18h3"/></svg>',
+  prebreak:'<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5"/><path d="M12 8v4.5l3 2"/></svg>'
 };
-const ACC = { clear:["#9eb6a8","rgba(158,182,168,.25)"],
-  accumulating:["#d6b88a","rgba(214,184,138,.25)"],
-  due:["#c98270","rgba(201,130,112,.25)"] };
+const ACC = { clear:"#8cc6a6", accumulating:"#d7b16d", due:"#e07a5d" };
 const pick = a => a[Math.floor(Math.random()*a.length)];
 listen("nudge", e => {
   const { kind, playful, state, secs } = e.payload;
-  const [acc, soft] = ACC[state] || ACC.clear;
-  document.body.style.setProperty("--acc", acc);
-  document.body.style.setProperty("--accSoft", soft);
+  document.body.style.setProperty("--acc", ACC[state] || ACC.clear);
   document.getElementById("ttl").textContent = TTL[kind] || "";
   document.getElementById("txt").textContent = pick(COPY[playful ? "playful" : "calm"][kind]);
   document.getElementById("glyph").innerHTML = GLYPH[kind] || GLYPH.prebreak;
@@ -92,4 +88,5 @@ listen("nudge", e => {
 document.getElementById("now").onclick = () => invoke("break_now");
 addEventListener("contextmenu", e => e.preventDefault());
 </script>
-</body></html>
+</body>
+</html>

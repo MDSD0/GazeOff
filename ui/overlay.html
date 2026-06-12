@@ -1,153 +1,96 @@
 <!doctype html>
-<html><head><meta charset="utf-8"><style>
-  * { margin:0; padding:0; box-sizing:border-box; user-select:none; cursor:default; }
-  html,body { width:100%; height:100%; background:#070b10; overflow:hidden;
-    font-family:'Segoe UI Variable Display','Segoe UI',sans-serif; color:#e9e5de;
-    --acc:#a7c8bb; --accSoft:rgba(167,200,187,.32); --accGlow:rgba(167,200,187,.16);
-    --wallpaper:none; }
-  body { opacity:0; transition:opacity 1.2s cubic-bezier(.25,.1,.25,1); }
+<html>
+<head>
+<meta charset="utf-8">
+<style>
+  * { box-sizing:border-box; margin:0; padding:0; user-select:none; cursor:default; }
+  html,body {
+    width:100%; height:100%; overflow:hidden; background:#111518; color:#fff;
+    font-family:"Segoe UI Variable Display","Segoe UI",system-ui,sans-serif;
+    --wallpaper:none; --accent:#ffffff;
+  }
+  body { opacity:0; transition:opacity .9s cubic-bezier(.25,.1,.25,1); }
   body.in { opacity:1; }
-
-  /* ---- atmosphere ---- */
-  .wallpaper { position:fixed; inset:-42px; pointer-events:none;
-    background-image:var(--wallpaper),
-      linear-gradient(180deg, #18263b 0%, #354c67 45%, #e5b987 76%, #24342d 100%);
+  .wall {
+    position:fixed; inset:-42px; background-image:var(--wallpaper),
+      linear-gradient(125deg,#b71469 0%,#8c3d97 30%,#41639a 58%,#04977f 100%);
     background-size:cover; background-position:center;
-    filter:blur(24px) saturate(1.18) brightness(.72);
-    transform:scale(1.05); }
-  .sky { position:fixed; inset:0; pointer-events:none;
+    filter:blur(24px) saturate(1.22) brightness(.78); transform:scale(1.055);
+  }
+  .wash {
+    position:fixed; inset:0; pointer-events:none;
     background:
-      radial-gradient(70% 54% at 50% 72%, rgba(255,203,148,.27), transparent 64%),
-      linear-gradient(180deg, rgba(6,14,26,.56) 0%, rgba(14,25,37,.38) 40%, rgba(32,29,20,.45) 100%); }
-  .stars { position:fixed; inset:0; pointer-events:none; opacity:.72;
-    background-image:
-      radial-gradient(circle at 12% 18%, rgba(255,255,255,.88) 0 1px, transparent 1.6px),
-      radial-gradient(circle at 28% 30%, rgba(255,255,255,.62) 0 1px, transparent 1.5px),
-      radial-gradient(circle at 44% 15%, rgba(255,255,255,.80) 0 1px, transparent 1.4px),
-      radial-gradient(circle at 62% 24%, rgba(255,255,255,.70) 0 1px, transparent 1.5px),
-      radial-gradient(circle at 79% 13%, rgba(255,255,255,.86) 0 1px, transparent 1.6px),
-      radial-gradient(circle at 89% 34%, rgba(255,255,255,.58) 0 1px, transparent 1.5px);
-    animation:twinkle 8s ease-in-out infinite alternate; }
-  @keyframes twinkle { from { opacity:.42; } to { opacity:.78; } }
-  .horizon { position:fixed; left:-5vw; right:-5vw; bottom:-18vh; height:44vh; pointer-events:none;
-    background:
-      radial-gradient(80% 58% at 50% 3%, rgba(255,218,172,.34), transparent 58%),
-      linear-gradient(180deg, rgba(255,214,166,.22), rgba(20,34,30,.58) 42%, rgba(6,10,10,.86));
-    filter:blur(10px); }
-  .clouds { position:fixed; left:-10vw; right:-10vw; bottom:7vh; height:24vh; pointer-events:none;
-    background:
-      radial-gradient(30vw 11vh at 18% 58%, rgba(238,243,236,.22), transparent 68%),
-      radial-gradient(36vw 13vh at 46% 45%, rgba(238,243,236,.18), transparent 70%),
-      radial-gradient(30vw 11vh at 76% 60%, rgba(238,243,236,.20), transparent 70%);
-    filter:blur(20px); opacity:.92; animation:cloudDrift 72s ease-in-out infinite alternate; }
-  @keyframes cloudDrift { to { transform:translateX(5vw); } }
-  .vig  { position:fixed; inset:0; pointer-events:none;
-    background:radial-gradient(120% 90% at 50% 46%, transparent 38%, rgba(3,5,8,.66) 100%); }
-  .aur { position:fixed; width:62vw; height:62vw; border-radius:50%;
-    filter:blur(92px); opacity:.18; pointer-events:none;
-    transition:background 3s ease; }
-  .aur.a { top:-22vw; left:-14vw;
-    background:radial-gradient(circle, var(--accGlow), transparent 65%);
-    animation:driftA 46s ease-in-out infinite alternate; }
-  .aur.b { bottom:-26vw; right:-12vw;
-    background:radial-gradient(circle, rgba(255,224,184,.10), transparent 65%);
-    animation:driftB 58s ease-in-out infinite alternate; }
-  @keyframes driftA { from { transform:translate(0,0) scale(1); } to { transform:translate(9vw,6vh) scale(1.15); } }
-  @keyframes driftB { from { transform:translate(0,0) scale(1.1); } to { transform:translate(-7vw,-5vh) scale(.95); } }
-  .grain { position:fixed; inset:0; pointer-events:none; opacity:.055; mix-blend-mode:overlay;
-    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E"); }
-  .tint { position:fixed; inset:0; pointer-events:none; opacity:0; transition:opacity 2.5s ease; }
-  .tint.accumulating { background:radial-gradient(80% 80% at 50% 60%, rgba(214,184,138,.10), transparent 75%); opacity:1; }
-  .tint.due { background:radial-gradient(80% 80% at 50% 60%, rgba(201,130,112,.11), transparent 75%); opacity:1; }
-
-  /* ---- stage ---- */
-  .stage { position:fixed; inset:0; display:flex; flex-direction:column;
-    align-items:center; justify-content:center; }
-  .stage > * { opacity:0; transform:translateY(10px); }
-  body.in .stage > * { animation:rise 1.1s cubic-bezier(.22,.8,.3,1) forwards; }
-  body.in .orbwrap { animation-delay:.05s; }
-  body.in .msg     { animation-delay:.28s; }
-  body.in .sub     { animation-delay:.46s; }
-  @keyframes rise { to { opacity:1; transform:none; } }
-
-  .orbwrap { position:relative; width:286px; height:286px; margin-bottom:54px; }
-  .halo { position:absolute; inset:-46px; border-radius:50%;
-    background:radial-gradient(circle, var(--accGlow), transparent 64%);
-    filter:blur(32px); transition:background 3s ease; animation:breathe 7s ease-in-out infinite; }
-  .core { position:absolute; inset:58px; border-radius:50%; overflow:hidden;
-    border:1px solid rgba(255,255,255,.18);
-    background:
-      radial-gradient(70% 55% at 50% 72%, rgba(255,210,150,.38), transparent 68%),
-      linear-gradient(180deg, rgba(15,37,61,.78), rgba(42,71,82,.42) 52%, rgba(220,174,111,.28) 72%, rgba(15,34,29,.72));
-    box-shadow:inset 0 1px 22px rgba(255,255,255,.13), 0 22px 70px rgba(0,0,0,.28);
-    animation:breathe 7s ease-in-out infinite;
-    display:flex; flex-direction:column; align-items:center; justify-content:center; gap:3px; }
-  .core::before { content:""; position:absolute; inset:0;
-    background:
-      radial-gradient(circle at 30% 22%, rgba(255,255,255,.9) 0 1px, transparent 1.5px),
-      radial-gradient(circle at 68% 18%, rgba(255,255,255,.72) 0 1px, transparent 1.5px),
-      linear-gradient(110deg, transparent 12%, rgba(135,227,195,.16) 36%, rgba(133,167,233,.12) 50%, transparent 72%);
-    animation:aurora 12s ease-in-out infinite alternate; }
-  .core::after { content:""; position:absolute; left:-18%; right:-18%; bottom:18%; height:28%;
-    background:
-      radial-gradient(44% 62% at 34% 70%, rgba(237,244,237,.30), transparent 70%),
-      radial-gradient(50% 70% at 68% 58%, rgba(237,244,237,.22), transparent 72%);
-    filter:blur(10px); animation:cloudDrift 28s ease-in-out infinite alternate; }
-  @keyframes aurora { from { transform:translateX(-8%) skewX(-8deg); opacity:.55; }
-    to { transform:translateX(8%) skewX(10deg); opacity:.95; } }
-  @keyframes breathe { 0%,100% { transform:scale(1); } 50% { transform:scale(1.045); } }
-  .time { position:relative; z-index:1; font-size:30px; font-weight:200; font-variant-numeric:tabular-nums;
-    letter-spacing:.04em; color:rgba(240,237,230,.92); }
-  .kind { position:relative; z-index:1; font-size:10px; font-weight:600; letter-spacing:.22em; text-transform:uppercase;
-    color:rgba(233,229,222,.40); }
-  .orbwrap svg { position:absolute; inset:0; transform:rotate(-90deg); overflow:visible; }
-  .track { fill:none; stroke:rgba(255,255,255,.09); stroke-width:1.5; }
-  .prog  { fill:none; stroke:var(--acc); stroke-width:2.5; stroke-linecap:round;
-    filter:drop-shadow(0 0 6px var(--accSoft));
-    transition:stroke-dashoffset 1s linear, stroke 2s ease; }
-
-  .msg { font-size:46px; font-weight:230; letter-spacing:0; text-align:center;
-    max-width:780px; line-height:1.22; padding:0 40px;
-    text-shadow:0 2px 30px rgba(0,0,0,.4); }
-  .sub { margin-top:20px; font-size:15px; font-weight:400; color:rgba(233,229,222,.50);
-    text-align:center; letter-spacing:.01em; }
-
-  .actions { position:fixed; bottom:60px; left:0; right:0; display:flex; justify-content:center; }
-  button { font:inherit; font-size:13.5px; color:rgba(233,229,222,.60);
-    background:rgba(255,255,255,.08); border:1px solid rgba(255,255,255,.16);
-    backdrop-filter:blur(6px); border-radius:999px; padding:11px 28px;
-    opacity:0; pointer-events:none;
-    transition:opacity 1.4s ease, background .3s ease, color .3s ease, border-color .3s; }
-  button.on { opacity:1; pointer-events:auto; cursor:pointer; }
-  button.on:hover { background:rgba(255,255,255,.13); color:#f2efe9;
-    border-color:rgba(255,255,255,.22); }
-
-  body.ret .orbwrap { transition:opacity 1.2s ease, transform 1.2s ease;
-    opacity:.25; transform:scale(.9); }
-</style></head>
+      radial-gradient(70% 120% at 0% 22%, rgba(218,13,111,.54), transparent 62%),
+      radial-gradient(75% 105% at 100% 26%, rgba(0,191,145,.56), transparent 66%),
+      linear-gradient(120deg, rgba(173,41,131,.34), rgba(33,97,157,.34) 55%, rgba(0,148,119,.32));
+  }
+  .grain {
+    position:fixed; inset:0; pointer-events:none; opacity:.035; mix-blend-mode:overlay;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.82' numOctaves='2'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  }
+  .time-now {
+    position:fixed; top:70px; left:0; right:0; text-align:center;
+    font-size:17px; font-weight:760; color:rgba(255,255,255,.86);
+    text-shadow:0 2px 18px rgba(0,0,0,.25);
+  }
+  .center {
+    position:fixed; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center;
+    transform:translateY(-8px); text-align:center; padding:0 64px;
+  }
+  .msg {
+    max-width:980px; font-size:54px; line-height:1.12; font-weight:820; letter-spacing:0;
+    text-shadow:0 3px 30px rgba(0,0,0,.20);
+  }
+  .sub {
+    margin-top:24px; font-family:"Segoe UI Variable Text","Segoe UI",system-ui,sans-serif;
+    font-size:20px; line-height:1.35; font-weight:690; color:rgba(255,255,255,.84);
+    text-shadow:0 2px 22px rgba(0,0,0,.20);
+  }
+  .rule { width:164px; height:1px; background:rgba(255,255,255,.26); margin:38px 0 30px; }
+  .count {
+    font-size:42px; line-height:1; font-weight:820; letter-spacing:.03em;
+    color:rgba(255,255,255,.52); font-variant-numeric:tabular-nums;
+  }
+  .actions {
+    position:fixed; left:0; right:0; bottom:78px; display:flex; flex-direction:column; align-items:center; gap:10px;
+    font-family:"Segoe UI Variable Text","Segoe UI",system-ui,sans-serif;
+  }
+  .row { display:flex; gap:10px; }
+  button {
+    min-width:130px; height:39px; border:0; border-radius:999px; padding:0 22px;
+    display:none; align-items:center; justify-content:center; gap:8px;
+    color:white; background:rgba(255,255,255,.22);
+    box-shadow:inset 0 1px 0 rgba(255,255,255,.18), 0 8px 30px rgba(0,0,0,.13);
+    backdrop-filter:blur(18px); font:inherit; font-size:15px; font-weight:820; cursor:pointer;
+  }
+  button.on { display:flex; }
+  button:hover { background:rgba(255,255,255,.32); }
+  .esc { margin-top:4px; color:rgba(255,255,255,.34); font-size:13px; font-weight:650; }
+  body.ret .center { opacity:.42; transform:translateY(-8px) scale(.985); transition:.9s ease; }
+  @media (max-width:760px) {
+    .msg { font-size:38px; }
+    .sub { font-size:17px; }
+    .count { font-size:36px; }
+  }
+</style>
+</head>
 <body>
-  <div class="wallpaper"></div>
-  <div class="sky"></div>
-  <div class="stars"></div>
-  <div class="horizon"></div>
-  <div class="clouds"></div>
-  <div class="aur a"></div><div class="aur b"></div>
-  <div class="vig"></div><div class="grain"></div>
-  <div class="tint" id="tint"></div>
-  <div class="stage">
-    <div class="orbwrap">
-      <div class="halo"></div>
-      <svg viewBox="0 0 264 264">
-        <circle class="track" cx="132" cy="132" r="128"/>
-        <circle class="prog" id="prog" cx="132" cy="132" r="128"
-          stroke-dasharray="804.2" stroke-dashoffset="804.2"/>
-      </svg>
-      <div class="core"><div class="time" id="time"></div><div class="kind" id="kind"></div></div>
-    </div>
+  <div class="wall"></div>
+  <div class="wash"></div>
+  <div class="grain"></div>
+  <div class="time-now" id="clock"></div>
+  <main class="center">
     <div class="msg" id="msg"></div>
     <div class="sub" id="sub"></div>
+    <div class="rule"></div>
+    <div class="count" id="time"></div>
+  </main>
+  <div class="actions">
+    <button id="delay1">+ 1 min</button>
+    <button id="delay5">+ 5 min</button>
+    <div class="row"><button id="btn"></button></div>
+    <div class="esc" id="esc">Press Esc to skip the break</div>
   </div>
-  <div class="actions"><button id="btn"></button></div>
 
 <script>
 const { invoke } = window.__TAURI__.core;
@@ -155,82 +98,76 @@ const { listen } = window.__TAURI__.event;
 
 const COPY = {
   calm: {
-    short: ["Eyes to the horizon.","Look somewhere far away. Your eyes will thank you.",
-      "Find the farthest thing you can see. Stay with it.","Step back. Your screen can hold this thought.",
-      "Soften your gaze. Let it travel.","A short rest for a long day.","Twenty feet away, something is worth looking at."],
-    long: ["You've earned this. Stand up, move a little.","Five minutes away changes the next hour.",
-      "Walk somewhere. The work will keep.","Shoulders down. Jaw loose. Go get water.","Leave the desk. It will still be here."],
-    due: ["It's been a long stretch. This one matters.","Your eyes are working hard. Give them this one.",
-      "A few breaks slipped by. Let this one land."],
-    ret: ["Welcome back. Start fresh.","Sit tall. Begin again.","One slow blink, then go.",
-      "Your next session starts clean."],
-    sub_short: "Look at something at least twenty feet away.",
-    sub_long: "Step away from the desk if you can.",
+    short:["Rest now, resume shortly.","Eyes away. The screen can wait.","Look far away for a moment."],
+    long:["Step away for a few minutes.","Stand up. Move slowly. Come back fresh.","Leave the desk. This is the reset."],
+    due:["Rest now, resume shortly.","This break matters. Let it land.","Long stretch detected. Take this one."],
+    ret:["Welcome back.","Start fresh.","One slow blink, then go."],
+    sub_short:"Set your eyes on something distant until the countdown is over",
+    sub_long:"Step away from the desk until the countdown is over",
   },
   playful: {
-    short: ["Touch grass, twin. A few seconds, go.","Bestie, look out the window for a sec.",
-      "Your eyes are not it rn. Look far away.","We see you locked in. Now look at literally anything else.",
-      "Eyes need a lil vacation. Send them somewhere far."],
-    long: ["Long session detected. You're cooked. Rest.","Go be a person for five minutes.",
-      "Stand up. Hydrate. Walk it off.","Five whole minutes of not-screen. Wild concept."],
-    due: ["You've been skipping. The eyes are filing a complaint.","This is your sign. Actually rest this time.",
-      "Skipped breaks said: we remember."],
-    ret: ["Okay, back to it. You ate that break.","Recharged. Probably. Lock in.","Posture check, then go."],
-    sub_short: "Stare at something far away. Anything. A tree.",
-    sub_long: "Physically leave the chair. You can do it.",
+    short:["Rest now, resume shortly.","Touch grass, twin.","Look at literally anything else."],
+    long:["Go be a person for five minutes.","Stand up. Hydrate. Walk it off.","Five minutes of not-screen. Wild concept."],
+    due:["You have been skipping. Rest now.","This is your sign. Actually rest.","Your eyes are filing a complaint."],
+    ret:["Okay, back to it.","Recharged. Lock in.","Posture check, then go."],
+    sub_short:"Set your eyes on something distant until the countdown is over",
+    sub_long:"Physically leave the chair if you can",
   }
 };
-const ACC = {
-  clear:        ["#9eb6a8","rgba(158,182,168,.32)","rgba(158,182,168,.16)"],
-  accumulating: ["#d6b88a","rgba(214,184,138,.32)","rgba(214,184,138,.15)"],
-  due:          ["#c98270","rgba(201,130,112,.30)","rgba(201,130,112,.15)"] };
-const C = 804.2;
 const pick = a => a[Math.floor(Math.random()*a.length)];
-const fmt = s => `${Math.floor(s/60)}:${String(s%60).padStart(2,"0")}`;
+const fmt = s => `${String(Math.floor(s/60)).padStart(2,"0")}:${String(s%60).padStart(2,"0")}`;
+let active = false, retShown = false, lastDeck = "";
 
-let active = false, retShown = false;
+function tickClock() {
+  const d = new Date();
+  document.getElementById("clock").textContent = `Current time is ${d.toLocaleTimeString([], { hour:"numeric", minute:"2-digit" })}`;
+}
+tickClock(); setInterval(tickClock, 15000);
 
 function chime() {
   try {
-    const ctx = new AudioContext();
-    const t = ctx.currentTime;
+    const ctx = new AudioContext(), t = ctx.currentTime;
     [[523.25,0],[783.99,.22]].forEach(([f,d]) => {
       const o = ctx.createOscillator(), g = ctx.createGain();
       o.type = "sine"; o.frequency.value = f;
       g.gain.setValueAtTime(0, t+d);
-      g.gain.linearRampToValueAtTime(.06, t+d+.06);
-      g.gain.exponentialRampToValueAtTime(.0001, t+d+1.4);
-      o.connect(g).connect(ctx.destination);
-      o.start(t+d); o.stop(t+d+1.5);
+      g.gain.linearRampToValueAtTime(.055, t+d+.06);
+      g.gain.exponentialRampToValueAtTime(.0001, t+d+1.25);
+      o.connect(g).connect(ctx.destination); o.start(t+d); o.stop(t+d+1.3);
     });
   } catch (_) {}
 }
 
 function render(s) {
   const voice = COPY[s.playful ? "playful" : "calm"];
-  const [acc, soft, glow] = ACC[s.state] || ACC.clear;
-  const st = document.body.style;
-  st.setProperty("--acc", acc); st.setProperty("--accSoft", soft); st.setProperty("--accGlow", glow);
-  document.getElementById("tint").className = "tint " + s.state;
-
   const btn = document.getElementById("btn");
+  const delay1 = document.getElementById("delay1");
+  const delay5 = document.getElementById("delay5");
   if (s.brk) {
-    if (!active) {
-      active = true; retShown = false;
+    const deckKey = `${s.state}-${s.brk.long}-${s.playful}`;
+    if (!active || deckKey !== lastDeck) {
+      active = true; retShown = false; lastDeck = deckKey;
       document.body.classList.remove("ret");
       const deck = s.state === "due" && !s.brk.long ? voice.due : (s.brk.long ? voice.long : voice.short);
       document.getElementById("msg").textContent = pick(deck);
       document.getElementById("sub").textContent = s.brk.long ? voice.sub_long : voice.sub_short;
-      document.getElementById("kind").textContent = s.brk.long ? "long break" : "short break";
       document.body.classList.add("in");
     }
-    document.getElementById("time").textContent = fmt(s.brk.dur - s.brk.t);
-    document.getElementById("prog").style.strokeDashoffset = C * (1 - s.brk.t / s.brk.dur);
+    document.getElementById("time").textContent = fmt(Math.max(0, s.brk.dur - s.brk.t));
+    if (s.brk.skippable && s.brk.t >= s.brk.skip_at) {
+      delay1.className = "on"; delay5.className = "on";
+    } else {
+      delay1.className = ""; delay5.className = "";
+    }
     if (s.brk.t >= s.brk.end_at) {
-      btn.textContent = "End break"; btn.className = "on"; btn.onclick = () => invoke("end_break");
+      btn.textContent = "End Break"; btn.className = "on"; btn.onclick = () => invoke("end_break");
+      document.getElementById("esc").textContent = "You can end this break early";
     } else if (s.brk.skippable && s.brk.t >= s.brk.skip_at) {
-      btn.textContent = "Not now — return in 5 min"; btn.className = "on"; btn.onclick = () => invoke("skip_break");
-    } else { btn.className = ""; }
+      btn.textContent = "Skip Break"; btn.className = "on"; btn.onclick = () => invoke("skip_break");
+      document.getElementById("esc").textContent = "Press Esc to skip the break";
+    } else {
+      btn.className = ""; document.getElementById("esc").textContent = "";
+    }
   } else if (s.returning > 0) {
     if (!retShown) {
       retShown = true; active = false;
@@ -239,17 +176,18 @@ function render(s) {
       document.getElementById("msg").textContent = pick(voice.ret);
       document.getElementById("sub").textContent = "";
       document.getElementById("time").textContent = "";
-      document.getElementById("kind").textContent = "";
-      document.getElementById("prog").style.strokeDashoffset = 0;
-      btn.className = "";
+      btn.className = ""; delay1.className = ""; delay5.className = "";
+      document.getElementById("esc").textContent = "";
     }
     if (s.returning <= 1) document.body.classList.remove("in");
   } else {
-    active = false; retShown = false;
+    active = false; retShown = false; lastDeck = "";
     document.body.classList.remove("in", "ret");
   }
 }
 
+document.getElementById("delay1").onclick = () => invoke("delay_break", { secs: 60 });
+document.getElementById("delay5").onclick = () => invoke("delay_break", { secs: 300 });
 listen("snap", e => render(e.payload));
 invoke("snapshot").then(render);
 invoke("wallpaper_data_url").then(url => {
@@ -258,4 +196,5 @@ invoke("wallpaper_data_url").then(url => {
 addEventListener("keydown", e => { if (e.key === "Escape") invoke("skip_break"); });
 addEventListener("contextmenu", e => e.preventDefault());
 </script>
-</body></html>
+</body>
+</html>
