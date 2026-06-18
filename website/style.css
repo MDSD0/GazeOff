@@ -43,3 +43,6 @@ footer{max-width:1280px;margin:auto;padding:36px 32px 52px;display:grid;grid-tem
 
 /* Organic star field, regenerated on each page load. */
 .stars{background:none}.stars i{position:absolute;width:var(--star-size);height:var(--star-size);left:var(--star-x);top:var(--star-y);border-radius:50%;background:#f7eedb;opacity:var(--star-alpha);animation:star-breathe var(--star-speed) ease-in-out var(--star-delay) infinite alternate}@keyframes star-breathe{from{opacity:.12}to{opacity:var(--star-alpha)}}
+
+/* Blob-soft blink: rounded stroke caps keep the eyelids free of pointed ends. */
+.nudge-blink svg{fill:none;stroke:currentColor;stroke-width:18;stroke-linecap:round;stroke-linejoin:round}
