@@ -868,7 +868,7 @@
         <div class="group-title">About</div>
         <div class="row">
           <div class="label">gazeOff<br><span class="hint">A Windows-first eye-care companion.</span></div>
-          <div class="muted">0.1.1</div>
+          <div class="muted">0.1.2</div>
         </div>
         <div class="group-title" style="margin-top: 32px;">Feedback &amp; support</div>
         <div class="row">
@@ -1277,24 +1277,36 @@ async function loadStats(){
   const days = st.days || [];
   const maxScreen = Math.max(1, ...days.map(d => d.screen_secs || 0));
   const bars = $('bars');
-  bars.innerHTML = '';
+  const existingBars = new Map(Array.from(bars.children).map(col => [col.dataset.date, col]));
+  const liveDates = new Set(days.map(d => d.date));
+  for (const [date, col] of existingBars) {
+    if (!liveDates.has(date)) col.remove();
+  }
   days.forEach(d => {
-    const col = document.createElement('div'); col.className = 'bar-col';
-    col.tabIndex = 0;
-    const bar = document.createElement('div'); bar.className = 'bar ' + adherenceClass(d);
+    let col = existingBars.get(d.date);
+    if (!col) {
+      col = document.createElement('div'); col.className = 'bar-col'; col.tabIndex = 0; col.dataset.date = d.date;
+      const tip = document.createElement('div'); tip.className = 'bar-tooltip';
+      tip.appendChild(document.createElement('strong'));
+      tip.appendChild(document.createElement('span'));
+      tip.appendChild(document.createElement('span'));
+      const bar = document.createElement('div'); bar.className = 'bar';
+      const lab = document.createElement('div'); lab.className = 'bar-day';
+      col.appendChild(tip); col.appendChild(bar); col.appendChild(lab); bars.appendChild(col);
+    }
+    const bar = col.querySelector('.bar');
+    bar.className = 'bar ' + adherenceClass(d);
     bar.style.height = `${Math.max(3, (d.screen_secs || 0) / maxScreen * 100)}%`;
     const total = (d.taken || 0) + (d.skipped || 0);
     const ratio = total ? (d.taken || 0) / total : 0;
     const rhythm = !total ? 'No break data' : ratio >= 0.8 ? 'Kept a good rhythm' : ratio >= 0.5 ? 'Some breaks slipped' : 'Most breaks skipped';
     const summary = `${weekday(d.date)} · ${fmtDur(d.screen_secs)} screen · ${d.taken || 0} taken · ${d.skipped || 0} skipped · ${rhythm}`;
     col.setAttribute('aria-label', summary);
-    const tip = document.createElement('div'); tip.className = 'bar-tooltip';
-    const tipMain = document.createElement('strong'); tipMain.textContent = `${weekday(d.date)} · ${fmtDur(d.screen_secs)} screen`;
-    const tipCounts = document.createElement('span'); tipCounts.textContent = `${d.taken || 0} taken · ${d.skipped || 0} skipped`;
-    const tipRhythm = document.createElement('span'); tipRhythm.textContent = rhythm;
-    tip.appendChild(tipMain); tip.appendChild(tipCounts); tip.appendChild(tipRhythm);
-    const lab = document.createElement('div'); lab.className = 'bar-day'; lab.textContent = weekday(d.date);
-    col.appendChild(tip); col.appendChild(bar); col.appendChild(lab); bars.appendChild(col);
+    const tipParts = col.querySelector('.bar-tooltip').children;
+    tipParts[0].textContent = `${weekday(d.date)} · ${fmtDur(d.screen_secs)} screen`;
+    tipParts[1].textContent = `${d.taken || 0} taken · ${d.skipped || 0} skipped`;
+    tipParts[2].textContent = rhythm;
+    col.querySelector('.bar-day').textContent = weekday(d.date);
   });
 }
 // Refresh when the Stats tab is opened, and live while it is the visible page.

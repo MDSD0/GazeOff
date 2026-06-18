@@ -16,7 +16,8 @@ use tauri::{
 
 // ---------- settings ----------
 
-const SETTINGS_VERSION: u64 = 1;
+const SETTINGS_VERSION: u64 = 2;
+const WELCOME_VERSION: u64 = 1;
 
 #[derive(Clone, Serialize, Deserialize)]
 #[serde(default)]
@@ -75,7 +76,7 @@ impl Default for Settings {
         Self {
             interval_secs: 20 * 60,
             short_secs: 25,
-            long_every: 3,
+            long_every: 5,
             long_secs: 3 * 60,
             mode: "smart".into(),
             playful: false,
@@ -98,7 +99,7 @@ impl Default for Settings {
             days: 0b0111_1111,
             bg_mode: "gradient".into(),
 
-            start_timer_on_launch: false,
+            start_timer_on_launch: true,
             pause_typing_dragging: false,
             dim_reminders: false,
             reminders_during_pauses: true,
@@ -204,8 +205,9 @@ struct Brk {
 struct Engine {
     s: Settings,
     day: Day,
-    history: Vec<Day>,  // archived past days for the stats page (rolling, capped)
-    streak: u32,        // consecutive good days
+    history: Vec<Day>, // archived past days for the stats page (rolling, capped)
+    streak: u32,       // consecutive good days
+    welcome_version: u64,
     work: u32,          // scheduler seconds; skips and delays can rewind this clock
     unbroken_work: u32, // active seconds since the last completed or confirmed break
     blink_t: u32,
@@ -841,7 +843,8 @@ fn save(app: &AppHandle, e: &Engine) {
         "settings": e.s,
         "day": e.day,
         "history": e.history,
-        "streak": e.streak
+        "streak": e.streak,
+        "welcome_version": e.welcome_version
     });
     // Write to a temp file then rename, so a crash mid-write can't corrupt the
     // only settings/stats file. std::fs::rename replaces atomically on Windows.
@@ -875,6 +878,7 @@ fn load(app: &AppHandle, e: &mut Engine) {
                 e.history = h;
             }
             e.streak = v["streak"].as_u64().unwrap_or(0) as u32;
+            e.welcome_version = v["welcome_version"].as_u64().unwrap_or(0);
             if migrated {
                 save(app, e);
             }
@@ -1773,8 +1777,6 @@ fn main() {
         ])
         .setup(move |app| {
             let handle = app.handle().clone();
-            let first_run = !store_path(&handle).exists();
-
             // 60fps hardware cursor tracking thread for smooth pre-break texts
             let tracker_handle = handle.clone();
             std::thread::spawn(move || {
@@ -1803,10 +1805,12 @@ fn main() {
             });
 
             let engine = handle.state::<Eng>().0.clone();
-            {
+            let show_welcome = {
                 let mut e = engine.lock().unwrap();
                 load(&handle, &mut e);
-                if first_run {
+                let show_welcome = e.welcome_version < WELCOME_VERSION;
+                if show_welcome {
+                    e.welcome_version = WELCOME_VERSION;
                     save(&handle, &e);
                 }
                 if !e.s.start_timer_on_launch {
@@ -1816,7 +1820,8 @@ fn main() {
                 if e.day.date != date {
                     archive_day(&mut e, date);
                 }
-            }
+                show_welcome
+            };
 
             let initial_theme = {
                 let s = engine.lock().unwrap().s.app_theme.clone();
@@ -1832,7 +1837,7 @@ fn main() {
                     .title("Welcome to GazeOff")
                     .inner_size(720.0, 540.0)
                     .center()
-                    .visible(first_run)
+                    .visible(show_welcome)
                     .build()?;
             let overlay =
                 WebviewWindowBuilder::new(app, "overlay", WebviewUrl::App("overlay.html".into()))
@@ -2417,6 +2422,8 @@ mod tests {
         let settings = Settings::default();
         assert_eq!(settings.short_secs, 25);
         assert_eq!(settings.long_secs, 3 * 60);
+        assert_eq!(settings.long_every, 5);
+        assert!(settings.start_timer_on_launch);
         assert_eq!(settings.mode, "smart");
         assert_eq!(settings.idle_pause, 2 * 60);
         assert_eq!(settings.posture_secs, 15 * 60);
@@ -2425,6 +2432,18 @@ mod tests {
         assert!(settings.reminders_during_pauses);
         assert!(settings.show_reminder_text);
         assert!(!settings.display_off_break);
+    }
+
+    #[test]
+    fn new_users_start_with_empty_local_stats() {
+        let engine = Engine::default();
+        assert_eq!(engine.day.taken, 0);
+        assert_eq!(engine.day.skipped, 0);
+        assert_eq!(engine.day.screen_secs, 0);
+        assert_eq!(engine.day.break_secs, 0);
+        assert!(engine.day.sessions.is_empty());
+        assert!(engine.history.is_empty());
+        assert_eq!(engine.streak, 0);
     }
 
     #[test]
@@ -2439,6 +2458,9 @@ mod tests {
 
         let settings = settings_from_store(&legacy);
         assert_eq!(settings.short_secs, 25);
+        assert_eq!(settings.long_secs, 3 * 60);
+        assert_eq!(settings.long_every, 5);
+        assert!(settings.start_timer_on_launch);
         assert_eq!(settings.blink_secs, 10 * 60);
         assert_eq!(settings.alert_position, "bottom_center");
     }

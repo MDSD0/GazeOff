@@ -5,7 +5,7 @@ This catalog reflects the current application and is the source of truth for the
 ## Break System
 
 - Configurable work interval, short-break duration, long-break duration, and long-break frequency.
-- Recommended defaults: 20 minutes of work, a 25-second short break, and a 3-minute long break every third cycle.
+- Recommended defaults: 20 minutes of work, a 25-second short break, and a 3-minute long break after four short breaks.
 - Automatic long-break upgrade after a 90-minute uninterrupted session.
 - Guaranteed cursor-following `5, 4, 3, 2, 1` countdown immediately before an automatic break.
 - Typing-aware start behavior that waits for a natural input pause, with a bounded fallback.

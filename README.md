@@ -30,7 +30,7 @@ The recommended rhythm starts with:
 
 - 20 minutes of work
 - A 25-second distance break
-- A 3-minute break every third cycle
+- A 3-minute break after four short breaks
 - A cursor-following `5, 4, 3, 2, 1` warning before the screen changes
 
 Every interval, sound, reminder, and visual can be adjusted.
