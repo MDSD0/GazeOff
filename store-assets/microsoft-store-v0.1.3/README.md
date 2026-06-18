@@ -8,9 +8,7 @@ In the English Store listing, upload screenshots `01` through `05` in filename o
 
 ## Import as a folder
 
-Partner Center requires its own exported CSV template. Click **Export listing** first, download the CSV, and place it beside this README. Do not rename its columns or field rows.
-
-Set these relative paths in the exported CSV:
+`Store listing GazeOff English.csv` is the populated Partner Center template. Its original columns and field rows are preserved, and it points to these relative image paths:
 
 - `Screenshots1`: `images/01-GazeOff-Tray.png`
 - `Screenshots2`: `images/02-GazeOff-Break.png`
@@ -19,4 +17,4 @@ Set these relative paths in the exported CSV:
 - `Screenshots5`: `images/05-GazeOff-Smart-Pause.png`
 - `StoreLogos1`: `images/GazeOff-StoreLogo-1080.png`
 
-Then choose **Import listing → Upload folder** and select this folder.
+Choose **Import listing → Upload folder** and select this `microsoft-store-v0.1.3` folder.
