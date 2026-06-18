@@ -20,6 +20,7 @@
 
 ## Product And Website
 
+- Paste and review the English Store copy in `MICROSOFT_STORE_LISTING.md`.
 - Publish a privacy policy explaining local idle, foreground-app, microphone/camera activity, and wallpaper access.
 - Capture final screenshots for Studio, sky mode, wallpaper mode, blink and posture reminders, AFK, and the tray panel.
 - Use `FEATURE_CATALOG.md` as the website feature source of truth.

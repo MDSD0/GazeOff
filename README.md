@@ -152,6 +152,7 @@ capabilities/        Tauri permission configuration
 - [Privacy policy](https://gazeoff.vercel.app/privacy/)
 - [Complete feature catalog](docs/FEATURE_CATALOG.md)
 - [Publishing checklist](docs/PUBLISHING_CHECKLIST.md)
+- [Microsoft Store listing kit](docs/MICROSOFT_STORE_LISTING.md)
 
 ## Feedback and support
 
