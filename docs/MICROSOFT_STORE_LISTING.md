@@ -85,6 +85,8 @@ Upload at least four clean Windows screenshots in this order:
 
 Do not include personal notifications, email addresses, file paths, debug windows, or the developer's own accumulated statistics. Capture at 1366 × 768 or larger, using PNG, with consistent Windows scaling.
 
+The prepared v0.1.3 screenshot set and 1:1 Store logo are in `store-assets/microsoft-store-v0.1.3/images`. See the README in that folder for the exact Partner Center import paths.
+
 ## Store logo
 
 Use the GazeOff blob—not an eye—as the Store identity. Start from `icons/tray_blob.png` and export the exact square dimensions requested by Partner Center. Keep generous padding around the blob and verify it remains recognizable at small sizes.
