@@ -12,7 +12,7 @@
   <p>
     <a href="https://gazeoff.vercel.app"><strong>Website</strong></a>
     ·
-    <a href="https://github.com/MDSD0/GazeOff/releases/latest"><strong>Download</strong></a>
+    <a href="https://github.com/MDSD0/GazeOff/releases/latest/download/GazeOff-windows-x64.exe"><strong>Download</strong></a>
     ·
     <a href="docs/FEATURE_CATALOG.md"><strong>Feature catalog</strong></a>
   </p>
@@ -91,9 +91,11 @@ These signals are processed on-device. GazeOff has no account system, analytics 
 
 ## Install
 
-Download the newest Windows build from [GitHub Releases](https://github.com/MDSD0/GazeOff/releases/latest), run `gazeoff.exe`, and find GazeOff in the system tray.
+Download the [newest Windows build directly](https://github.com/MDSD0/GazeOff/releases/latest/download/GazeOff-windows-x64.exe), run `GazeOff-windows-x64.exe`, and find GazeOff in the system tray.
 
-> The current release is not signed with a public code-signing certificate. Windows SmartScreen may show a warning on first launch.
+> **Windows security note:** GazeOff is not yet code-signed. Windows SmartScreen may offer **More info → Run anyway**. Windows 11 **Smart App Control** is a different protection layer and may block unsigned apps without a per-app bypass. We do not recommend disabling system-wide protection just for GazeOff. See [Microsoft’s Smart App Control guidance](https://support.microsoft.com/en-us/windows/smart-app-control-frequently-asked-questions-285ea03d-fa88-4d56-882e-6698afdb7003).
+
+On the first successful launch, GazeOff opens a welcome window confirming that it is running and showing where to find its tray icon and settings.
 
 ## Development
 
@@ -127,7 +129,7 @@ The release artifact is built with Cargo's optimized release profile. Every GitH
 Get-FileHash .\gazeoff.exe -Algorithm SHA256
 ```
 
-Public code signing is not yet configured, so Windows SmartScreen can ask for confirmation on first launch.
+Public code signing is not yet configured. SmartScreen may allow a manual confirmation; Smart App Control may block the unsigned executable entirely.
 
 </details>
 
@@ -149,6 +151,11 @@ capabilities/        Tauri permission configuration
 - [Latest release](https://github.com/MDSD0/GazeOff/releases/latest)
 - [Complete feature catalog](docs/FEATURE_CATALOG.md)
 - [Publishing checklist](docs/PUBLISHING_CHECKLIST.md)
+
+## Feedback and support
+
+- [Report a bug or request a feature](https://github.com/MDSD0/GazeOff/issues/new/choose)
+- Email [mr.imcommon@gmail.com](mailto:mr.imcommon@gmail.com?subject=GazeOff%20feedback) for private feedback
 
 <div align="center">
   <sub>Gaze off. See how beautiful the sky is.</sub>

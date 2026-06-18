@@ -1,0 +1,5 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Private feedback by email
+    url: mailto:mr.imcommon@gmail.com?subject=GazeOff%20feedback
+    about: Email the developer when your feedback should not be public.

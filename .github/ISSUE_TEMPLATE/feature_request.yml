@@ -1,0 +1,23 @@
+name: Feature request
+description: Suggest an improvement or a new GazeOff capability.
+title: "[Feature]: "
+labels: [enhancement]
+body:
+  - type: textarea
+    id: need
+    attributes:
+      label: What would you like GazeOff to help with?
+      description: Describe the situation or problem, not only the proposed button or setting.
+    validations:
+      required: true
+  - type: textarea
+    id: idea
+    attributes:
+      label: What would a good solution feel like?
+    validations:
+      required: true
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives or examples
+      description: Share any workarounds or similar features you have seen.

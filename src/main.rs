@@ -1577,6 +1577,46 @@ fn settings_window_action(app: AppHandle, action: String) {
 }
 
 #[tauri::command]
+fn open_contact(kind: String) -> Result<(), String> {
+    let target = match kind.as_str() {
+        "issues" => "https://github.com/MDSD0/GazeOff/issues/new/choose",
+        "email" => "mailto:mr.imcommon@gmail.com?subject=GazeOff%20feedback",
+        _ => return Err("unknown contact destination".into()),
+    };
+
+    #[cfg(windows)]
+    let result = std::process::Command::new("rundll32.exe")
+        .args(["url.dll,FileProtocolHandler", target])
+        .spawn();
+
+    #[cfg(not(windows))]
+    let result = std::process::Command::new("xdg-open").arg(target).spawn();
+
+    result
+        .map(|_| ())
+        .map_err(|error| format!("could not open contact destination: {error}"))
+}
+
+#[tauri::command]
+fn welcome_action(app: AppHandle, eng: State<Eng>, action: String) {
+    match action.as_str() {
+        "start" => {
+            eng.0.lock().unwrap().paused_until = 0;
+            hide(&app, "welcome");
+        }
+        "settings" => {
+            hide(&app, "welcome");
+            if let Some(window) = app.get_webview_window("settings") {
+                let _ = window.show();
+                let _ = window.set_focus();
+            }
+        }
+        "close" => hide(&app, "welcome"),
+        _ => {}
+    }
+}
+
+#[tauri::command]
 fn wallpaper_data_url() -> Option<String> {
     current_wallpaper_data_url()
 }
@@ -1721,6 +1761,8 @@ fn main() {
             toggle_pause,
             open_settings,
             settings_window_action,
+            open_contact,
+            welcome_action,
             wallpaper_data_url,
             get_recovery_score,
             get_stats,
@@ -1731,6 +1773,7 @@ fn main() {
         ])
         .setup(move |app| {
             let handle = app.handle().clone();
+            let first_run = !store_path(&handle).exists();
 
             // 60fps hardware cursor tracking thread for smooth pre-break texts
             let tracker_handle = handle.clone();
@@ -1763,6 +1806,9 @@ fn main() {
             {
                 let mut e = engine.lock().unwrap();
                 load(&handle, &mut e);
+                if first_run {
+                    save(&handle, &e);
+                }
                 if !e.s.start_timer_on_launch {
                     e.paused_until = u64::MAX;
                 }
@@ -1778,6 +1824,16 @@ fn main() {
             };
 
             // windows (all hidden until needed)
+            let _welcome =
+                WebviewWindowBuilder::new(app, "welcome", WebviewUrl::App("welcome.html".into()))
+                    .transparent(false)
+                    .decorations(false)
+                    .resizable(false)
+                    .title("Welcome to GazeOff")
+                    .inner_size(720.0, 540.0)
+                    .center()
+                    .visible(first_run)
+                    .build()?;
             let overlay =
                 WebviewWindowBuilder::new(app, "overlay", WebviewUrl::App("overlay.html".into()))
                     .transparent(true)
@@ -1863,7 +1919,7 @@ fn main() {
             }
 
             // overlay and settings never truly close - they hide
-            for label in ["overlay", "settings", "panel", "nudge", "dim", "afk_prompt"] {
+            for label in ["welcome", "overlay", "settings", "panel", "nudge", "dim", "afk_prompt"] {
                 if let Some(w) = app.get_webview_window(label) {
                     let wc = w.clone();
                     let is_panel = label == "panel";

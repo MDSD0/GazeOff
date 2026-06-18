@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="color-scheme" content="dark">
+  <title>Welcome to GazeOff</title>
+  <style>
+    :root{color-scheme:dark;--ink:#f7eedb;--soft:rgba(247,238,219,.72);--faint:rgba(247,238,219,.48);--rule:rgba(247,238,219,.16);--accent:#e8a874}
+    *{box-sizing:border-box}html,body{width:100%;height:100%;margin:0;overflow:hidden}body{position:relative;background:linear-gradient(180deg,#050714 0%,#0a0c1f 28%,#1a1730 58%,#5e3454 100%);color:var(--ink);font-family:Georgia,"Times New Roman",serif;-webkit-font-smoothing:antialiased}
+    body::before{content:"";position:absolute;inset:0;background:radial-gradient(ellipse at 70% 105%,rgba(232,168,116,.32),transparent 48%);pointer-events:none}
+    .stars{position:absolute;inset:0;background-image:radial-gradient(circle,#f7eedb 0 1px,transparent 1.2px),radial-gradient(circle,#f7eedb 0 .7px,transparent 1px);background-size:137px 137px,83px 83px;background-position:18px 24px,57px 41px;opacity:.28}
+    .drag{position:absolute;z-index:3;top:0;left:0;right:54px;height:46px}.close{position:absolute;z-index:4;top:0;right:0;width:54px;height:44px;border:0;background:transparent;color:var(--soft);font:20px sans-serif;cursor:pointer}.close:hover{background:rgba(255,255,255,.08);color:var(--ink)}
+    main{position:relative;z-index:2;height:100%;padding:58px 64px 48px;display:flex;flex-direction:column}.brand{display:flex;align-items:center;gap:10px;font-size:17px}.mark{width:27px;height:27px;fill:none;stroke:currentColor;stroke-width:1.5}
+    h1{max-width:560px;margin:46px 0 14px;font-size:54px;line-height:.98;font-weight:400;letter-spacing:-.035em}h1 em{display:block;color:#f2d7b8;font-weight:400}p{margin:0;color:var(--soft);font-size:17px;line-height:1.55}.tray-guide{margin-top:34px;padding:20px 0;display:grid;grid-template-columns:48px 1fr;gap:18px;border-top:1px solid var(--rule);border-bottom:1px solid var(--rule)}.tray-icon{width:42px;height:42px;display:grid;place-items:center;border:1px solid var(--rule);border-radius:8px;background:rgba(5,7,20,.62)}.tray-icon svg{width:25px;height:25px;fill:#f2d7b8}.tray-guide strong{display:block;margin-bottom:4px;font:600 14px system-ui,sans-serif}.tray-guide span{color:var(--faint);font:13px/1.45 system-ui,sans-serif}
+    .actions{margin-top:auto;display:flex;align-items:center;gap:10px}.actions button{min-height:42px;padding:0 17px;border:1px solid var(--rule);border-radius:7px;background:transparent;color:var(--ink);font:600 13px system-ui,sans-serif;cursor:pointer}.actions .primary{border-color:var(--ink);background:var(--ink);color:#151525}.actions button:hover{border-color:var(--ink)}.actions small{margin-left:auto;color:var(--faint);font:11px system-ui,sans-serif}
+  </style>
+</head>
+<body>
+  <div class="stars" aria-hidden="true"></div>
+  <div class="drag" data-tauri-drag-region></div>
+  <button class="close" type="button" aria-label="Close welcome window">×</button>
+  <main>
+    <div class="brand"><svg class="mark" viewBox="0 0 32 32" aria-hidden="true"><path d="M4 17c3-6 7-9 12-9s9 3 12 9c-3 5-7 8-12 8S7 22 4 17Z"/><circle cx="16" cy="16.5" r="3.5"/></svg>GazeOff</div>
+    <h1>You’re all set. <em>Your eyes can exhale.</em></h1>
+    <p>GazeOff is running quietly in the background and will keep interruptions brief.</p>
+    <div class="tray-guide">
+      <div class="tray-icon" aria-hidden="true"><svg viewBox="0 0 32 32"><path d="M5 19c0-4 3-7 7-7 1-4 4-6 8-6 5 0 9 4 9 9 2 1 3 3 3 5 0 4-3 7-7 7H11c-3 0-6-3-6-6v-2Z"/></svg></div>
+      <div><strong>Look beside the Windows clock</strong><span>Left-click the GazeOff tray icon for your timer. Right-click it for breaks, pause, settings, and quit.</span></div>
+    </div>
+    <div class="actions">
+      <button class="primary" id="start" type="button">Start GazeOff</button>
+      <button id="settings" type="button">Open settings</button>
+      <small>GazeOff stays in the tray—not the taskbar.</small>
+    </div>
+  </main>
+  <script>
+    const invoke=window.__TAURI__.core.invoke;
+    document.querySelector('#start').onclick=()=>invoke('welcome_action',{action:'start'});
+    document.querySelector('#settings').onclick=()=>invoke('welcome_action',{action:'settings'});
+    document.querySelector('.close').onclick=()=>invoke('welcome_action',{action:'close'});
+  </script>
+</body>
+</html>

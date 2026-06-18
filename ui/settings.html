@@ -868,7 +868,22 @@
         <div class="group-title">About</div>
         <div class="row">
           <div class="label">gazeOff<br><span class="hint">A Windows-first eye-care companion.</span></div>
-          <div class="muted">0.1.0</div>
+          <div class="muted">0.1.1</div>
+        </div>
+        <div class="group-title" style="margin-top: 32px;">Feedback &amp; support</div>
+        <div class="row">
+          <div class="label">
+            Report a bug or request a feature
+            <div class="hint">Use GitHub Issues so progress and follow-up stay visible.</div>
+          </div>
+          <button class="preview-btn" id="contact_issues" type="button">Open GitHub</button>
+        </div>
+        <div class="row">
+          <div class="label">
+            Email the developer
+            <div class="hint">For private feedback: mr.imcommon@gmail.com</div>
+          </div>
+          <button class="preview-btn" id="contact_email" type="button">Send email</button>
         </div>
         <div class="row">
           <div class="label">
@@ -1111,6 +1126,8 @@ function wire() {
   $('test_debt_nudge').onclick = e => { e.preventDefault(); e.stopPropagation(); invoke('test_nudge', { kind: 'debt' }); };
   $('test_afk_prompt').onclick = e => { e.preventDefault(); e.stopPropagation(); invoke('test_afk_prompt'); };
   $('test_break_overlay').onclick = e => { e.preventDefault(); e.stopPropagation(); invoke('break_now'); };
+  $('contact_issues').onclick = () => invoke('open_contact', { kind: 'issues' });
+  $('contact_email').onclick = () => invoke('open_contact', { kind: 'email' });
   $('reset_settings').onclick = async e => {
     e.preventDefault();
     e.stopPropagation();
