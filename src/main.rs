@@ -17,7 +17,7 @@ use tauri::{
 // ---------- settings ----------
 
 const SETTINGS_VERSION: u64 = 2;
-const WELCOME_VERSION: u64 = 1;
+const WELCOME_VERSION: u64 = 2;
 
 #[derive(Clone, Serialize, Deserialize)]
 #[serde(default)]

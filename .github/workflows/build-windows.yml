@@ -1,0 +1,32 @@
+name: Build Windows release
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Test
+        run: cargo test
+
+      - name: Build release
+        run: cargo build --release
+
+      - name: Stage executable
+        run: Copy-Item target\release\gazeoff.exe GazeOff-windows-x64.exe
+
+      - name: Upload executable
+        uses: actions/upload-artifact@v4
+        with:
+          name: GazeOff-windows-x64
+          path: GazeOff-windows-x64.exe
+          if-no-files-found: error

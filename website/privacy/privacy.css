@@ -5,7 +5,7 @@ body{max-width:920px;margin:0 auto;padding:0 32px;background:var(--bg);color:var
 header{height:76px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--rule);font-family:ui-sans-serif,system-ui,sans-serif;font-size:13px}
 header a,footer a{color:inherit;text-decoration:none}
 .brand{display:flex;align-items:center;gap:10px;font-family:Georgia,"Times New Roman",serif;font-size:19px}
-.brand svg{width:27px;fill:none;stroke:currentColor;stroke-width:1.4}
+.brand img{width:34px;height:34px;object-fit:contain}
 main{padding:80px 0 64px}
 .intro{padding-bottom:58px;border-bottom:1px solid var(--rule)}
 .updated{margin:0 0 22px;color:var(--faint);font:12px ui-monospace,"Cascadia Mono",monospace}
