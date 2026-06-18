@@ -149,6 +149,7 @@ capabilities/        Tauri permission configuration
 - [GazeOff website](https://gazeoff.vercel.app)
 - [Source code](https://github.com/MDSD0/GazeOff)
 - [Latest release](https://github.com/MDSD0/GazeOff/releases/latest)
+- [Privacy policy](https://gazeoff.vercel.app/privacy/)
 - [Complete feature catalog](docs/FEATURE_CATALOG.md)
 - [Publishing checklist](docs/PUBLISHING_CHECKLIST.md)
 
