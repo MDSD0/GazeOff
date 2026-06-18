@@ -1,93 +1,217 @@
 <!doctype html>
-<html><head><meta charset="utf-8"><style>
-  * { margin:0; padding:0; box-sizing:border-box; user-select:none; }
-  html,body { width:100%; height:100%; background:transparent; overflow:hidden;
-    font-family:'Segoe UI Variable Text','Segoe UI',sans-serif; color:#e9e5de;
-    --acc:#9eb6a8; --accSoft:rgba(158,182,168,.25); }
-  .pill { position:fixed; inset:6px; border-radius:19px; overflow:hidden;
-    border:1px solid rgba(255,255,255,.10);
-    background:linear-gradient(135deg, rgba(34,32,30,.94), rgba(22,21,19,.86));
-    box-shadow:0 10px 40px rgba(0,0,0,.45), inset 0 1px 0 rgba(255,255,255,.06);
-    display:flex; align-items:center; gap:14px; padding:0 18px 0 16px;
-    opacity:0; transform:translateY(8px);
-    transition:opacity .8s cubic-bezier(.22,.8,.3,1), transform .8s cubic-bezier(.22,.8,.3,1); }
-  .pill.in { opacity:1; transform:none; }
-  .pill::before { content:""; position:absolute; left:0; top:14px; bottom:14px; width:3px;
-    border-radius:0 3px 3px 0; background:var(--acc); opacity:.8;
-    box-shadow:0 0 12px var(--accSoft); }
-  .glyph { width:38px; height:38px; flex:none; border-radius:12px;
-    background:rgba(255,255,255,.05); border:1px solid rgba(255,255,255,.08);
-    display:flex; align-items:center; justify-content:center; }
-  .glyph svg { width:20px; height:20px; stroke:var(--acc); fill:none;
-    stroke-width:1.6; stroke-linecap:round; stroke-linejoin:round; }
-  .col { flex:1; min-width:0; }
-  .ttl { font-size:10px; font-weight:600; letter-spacing:.18em; text-transform:uppercase;
-    color:rgba(233,229,222,.38); margin-bottom:3px; }
-  .txt { font-size:13.5px; line-height:1.35; color:rgba(233,229,222,.88); }
-  button { font:inherit; font-size:12.5px; flex:none; cursor:pointer;
-    color:rgba(233,229,222,.78); background:rgba(255,255,255,.07);
-    border:1px solid rgba(255,255,255,.14); border-radius:999px; padding:7px 15px;
-    transition:background .2s, color .2s; }
-  button:hover { background:rgba(255,255,255,.16); color:#f2efe9; }
-  button.hidden { display:none; }
-  .fuse { position:absolute; bottom:0; left:0; height:2px; width:100%;
-    background:linear-gradient(90deg, var(--acc), transparent);
-    opacity:.45; transform-origin:left; }
-  .fuse.run { animation:burn linear forwards; }
-  @keyframes burn { from { transform:scaleX(1); } to { transform:scaleX(0); } }
-</style></head>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="color-scheme" content="dark">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,400;0,9..144,500;0,9..144,600;0,9..144,700;1,9..144,300;1,9..144,400;1,9..144,500;1,9..144,600;1,9..144,700&family=JetBrains+Mono:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; }
+  :root {
+    --bg: rgba(24, 24, 28, 0.75);
+    --border: rgba(255, 255, 255, 0.1);
+    --text: #f0f0f0;
+    --sub: rgba(240, 240, 240, 0.62);
+    --display: "Fraunces", Georgia, serif;
+    --mono: "JetBrains Mono", ui-monospace, monospace;
+  }
+
+  :root[data-theme="light"] {
+    --bg: rgba(250, 250, 250, 0.85);
+    --border: rgba(0, 0, 0, 0.1);
+    --text: #111;
+    --sub: #555;
+  }
+
+  html, body {
+    width: 100%; height: 100%; overflow: hidden;
+    background: transparent; color: var(--text); font-family: var(--display);
+  }
+
+  body {
+    display: flex; align-items: center; justify-content: center; padding: 4px;
+    opacity: 0; transition: opacity 0.25s ease, transform 0.25s ease;
+    transform: translateY(8px) scale(0.96);
+  }
+  body.in {
+    opacity: 1; transform: translateY(0) scale(1);
+  }
+  .borderless-icon {
+    --mark: #00c9ff;
+    width: 100%; height: 100%;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    background: transparent; color: var(--mark);
+  }
+  .borderless-icon.posture-icon { --mark: #00ffcc; }
+  .reminder-art {
+    width: 178px; height: 178px; overflow: visible;
+    fill: none; stroke: var(--mark); stroke-width: 5;
+    stroke-linecap: round; stroke-linejoin: round;
+    animation: gentle-bob 2.8s ease-in-out infinite;
+    filter: drop-shadow(0 0 12px color-mix(in srgb, var(--mark) 60%, transparent));
+    will-change: transform, filter;
+  }
+  .posture-arrow {
+    transform-origin: 50% 50%;
+    animation: arrow-bounce 1.5s ease-in-out infinite;
+    will-change: transform;
+  }
+  .blink-eye {
+    transform-origin: 50% 50%;
+    animation: cute-blink 2.8s linear infinite;
+    will-change: transform;
+  }
+  .blink-eye.right { animation-delay: 36ms; }
+  .blink-spark {
+    fill: var(--mark); stroke: none;
+    transform-origin: 50% 50%;
+    animation: sparkle-pop 2.8s ease-in-out infinite;
+  }
+  .reminder-label {
+    min-height: 22px; margin-top: -14px;
+    color: var(--mark); font-size: 17px; font-weight: 500; font-style: italic;
+    text-shadow: 0 2px 10px rgba(0,0,0,.6);
+    opacity: .92;
+  }
+  .borderless-icon.no-label .reminder-label { display: none; }
+
+  @keyframes gentle-bob {
+    0%, 100% { transform: translateY(3px) scale(.98); }
+    48% { transform: translateY(-4px) scale(1.02); }
+    62% { transform: translateY(-2px) scale(1); }
+  }
+  @keyframes arrow-bounce {
+    0%, 100% { transform: translateY(8px); }
+    50% { transform: translateY(-12px); }
+  }
+  @keyframes cute-blink {
+    0%, 28%, 36%, 44%, 100% { transform: scaleY(1); }
+    31%, 40% { transform: scaleY(.08); }
+    33%, 42% { transform: scaleY(.24); }
+  }
+  @keyframes sparkle-pop {
+    0%, 42%, 100% { transform: scale(.25) rotate(-18deg); opacity: 0; }
+    52% { transform: scale(1.15) rotate(8deg); opacity: .95; }
+    66% { transform: scale(.8) rotate(18deg); opacity: .55; }
+    78% { transform: scale(.25) rotate(28deg); opacity: 0; }
+  }
+
+  .borderless-text {
+    width: 100%; height: 100%; display: flex; align-items: center; justify-content: flex-start;
+    background: transparent; cursor: pointer;
+  }
+  .borderless-text:hover { transform: scale(1.05); }
+  .blue-text {
+    font-size: 16px; font-weight: 700; font-family: var(--display);
+    color: #00C9FF;
+    text-shadow: 0 1px 4px rgba(0,0,0,0.8);
+  }
+  .prebreak-countdown {
+    width: 100%; height: 100%; display: flex; align-items: center; justify-content: flex-start;
+    background: transparent; pointer-events: none;
+  }
+  .countdown-number {
+    width: 42px; height: 42px; display: grid; place-items: center;
+    border: 1px solid #e8a874; border-radius: 50%;
+    background: rgba(18, 22, 29, 0.94); color: #f2d7b8;
+    font-family: var(--mono); font-size: 17px; font-weight: 400;
+    box-shadow: 0 2px 8px rgba(0,0,0,.22);
+    font-variant-numeric: tabular-nums;
+  }
+  .debt-card {
+    width: max-content; height: 100%;
+    display: flex; flex-direction: column; justify-content: center; align-items: flex-start;
+    padding: 8px 14px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    background: var(--bg);
+  }
+  .debt-copy { min-width: 0; }
+  .debt-title {
+    font-size: 13px; font-weight: 700; line-height: 1.2;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
+  .debt-subtitle {
+    margin-top: 2px; font-size: 11px; font-weight: 600; color: var(--sub);
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .reminder-art, .posture-upper, .blink-eye, .blink-spark { animation: none !important; }
+  }
+</style>
+</head>
 <body>
   <div class="pill" id="pill">
-    <div class="glyph" id="glyph"></div>
-    <div class="col"><div class="ttl" id="ttl"></div><div class="txt" id="txt"></div></div>
-    <button id="now" class="hidden">Now</button>
-    <div class="fuse" id="fuse"></div>
+    <!-- Rendered content goes here -->
   </div>
+
 <script>
-const { invoke } = window.__TAURI__.core;
-const { listen } = window.__TAURI__.event;
-const COPY = {
-  calm: {
-    prebreak: ["A break is coming in a minute.","Good time to find a stopping point.","One minute to a short rest."],
-    blink: ["Blink slowly. Twice.","Close your eyes for one breath.","A few full blinks. Let them rest a second."],
-    posture: ["Drop your shoulders. Unclench your jaw.","Sit tall. Feet flat.","Roll your shoulders back, once."]
-  },
-  playful: {
-    prebreak: ["Break incoming in a min. Wrap the thought.","60 seconds till touch-grass o'clock.","Find a save point. Break soon."],
-    blink: ["Blink. No, actually blink. Full blink.","Your blink rate is in shambles. Fix it."],
-    posture: ["Unshrimp yourself.","Shoulders are not earrings. Drop them.","Posture check. You know what you did."]
+const listen = window.__TAURI__?.event?.listen || (async()=>{});
+const $ = id => document.getElementById(id);
+
+// Pre-defined SVG icons
+const icons = {
+  posture: `<svg class="reminder-art" viewBox="0 0 200 200" aria-hidden="true">
+    <g class="posture-arrow">
+      <path d="M 100 145 V 55 M 60 95 L 100 55 L 140 95" style="stroke-width: 24px;" stroke-linecap="round" stroke-linejoin="round" />
+    </g>
+  </svg>`,
+  blink: `<svg class="reminder-art" viewBox="0 0 200 200" aria-hidden="true">
+    <path class="blink-eye left" d="M 40 100 Q 60 75 80 100" style="stroke-width: 20px;" stroke-linecap="round" fill="none" />
+    <path class="blink-eye right" d="M 120 100 Q 140 75 160 100" style="stroke-width: 20px;" stroke-linecap="round" fill="none" />
+  </svg>`,
+  prebreak: `<svg viewBox="0 0 24 24"><path d="M12 22a10 10 0 100-20 10 10 0 000 20zM12 6v6l4 2"/></svg>`,
+  debt: `<svg viewBox="0 0 24 24"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0zM12 9v4M12 17h.01"/></svg>`
+};
+
+function render(p) {
+  document.body.classList.add('in');
+  if (p.app_theme) {
+    document.documentElement.setAttribute('data-theme', p.app_theme);
+    document.querySelector('meta[name="color-scheme"]').setAttribute('content', p.app_theme);
   }
-};
-const TTL = { prebreak:"Heads-up", blink:"Blink", posture:"Posture" };
-const GLYPH = {
-  // a resting eye
-  blink: '<svg viewBox="0 0 24 24"><path d="M3 12c2.5 3.8 6 5.6 9 5.6s6.5-1.8 9-5.6"/><path d="M7 15.5l-1.6 2M12 17.6V20M17 15.5l1.6 2"/></svg>',
-  // a straightening spine
-  posture: '<svg viewBox="0 0 24 24"><path d="M12 3.5v17"/><circle cx="12" cy="5.5" r="1.6"/><path d="M8.5 10h7M9.5 14h5M10.5 18h3"/></svg>',
-  // a filling ring
-  prebreak: '<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5" opacity=".35"/><path d="M12 3.5a8.5 8.5 0 0 1 8.5 8.5"/><path d="M12 8v4.5l3 2"/></svg>'
-};
-const ACC = { clear:["#9eb6a8","rgba(158,182,168,.25)"],
-  accumulating:["#d6b88a","rgba(214,184,138,.25)"],
-  due:["#c98270","rgba(201,130,112,.25)"] };
-const pick = a => a[Math.floor(Math.random()*a.length)];
-listen("nudge", e => {
-  const { kind, playful, state, secs } = e.payload;
-  const [acc, soft] = ACC[state] || ACC.clear;
-  document.body.style.setProperty("--acc", acc);
-  document.body.style.setProperty("--accSoft", soft);
-  document.getElementById("ttl").textContent = TTL[kind] || "";
-  document.getElementById("txt").textContent = pick(COPY[playful ? "playful" : "calm"][kind]);
-  document.getElementById("glyph").innerHTML = GLYPH[kind] || GLYPH.prebreak;
-  document.getElementById("now").className = kind === "prebreak" ? "" : "hidden";
-  const fuse = document.getElementById("fuse");
-  fuse.className = "fuse"; void fuse.offsetWidth;
-  fuse.style.animationDuration = (secs || 8) + "s";
-  fuse.className = "fuse run";
-  const p = document.getElementById("pill");
-  p.classList.remove("in"); void p.offsetWidth; p.classList.add("in");
-});
-document.getElementById("now").onclick = () => invoke("break_now");
-addEventListener("contextmenu", e => e.preventDefault());
+
+  const pill = $('pill');
+  const labelState = p.show_reminder_text === false ? ' no-label' : '';
+
+  if (p.kind === 'blink') {
+    pill.className = 'borderless-icon blink-icon' + labelState;
+    pill.onclick = null;
+    pill.innerHTML = `${icons.blink}<div class="reminder-label">Blink</div>`;
+  } else if (p.kind === 'posture') {
+    pill.className = 'borderless-icon posture-icon' + labelState;
+    pill.onclick = null;
+    pill.innerHTML = `${icons.posture}<div class="reminder-label">Fix posture</div>`;
+  } else if (p.kind === 'prebreak') {
+    pill.className = 'prebreak-countdown';
+    pill.onclick = null;
+    pill.innerHTML = `<span class="countdown-number">${p.remain || 5}</span>`;
+  } else if (p.kind === 'test_break') {
+    pill.className = 'borderless-text';
+    pill.onclick = null;
+    pill.innerHTML = `<span class="blue-text">Test: ${p.remain || 5}s</span>`;
+  } else if (p.kind === 'test_prebreak') {
+    pill.className = 'prebreak-countdown';
+    pill.onclick = null;
+    pill.innerHTML = `<span class="countdown-number">${p.remain || 5}</span>`;
+  } else {
+    // Break debt
+    const mins = Math.max(1, p.work_mins || 30);
+    pill.className = 'debt-card';
+    pill.onclick = null;
+    pill.innerHTML = `
+      <div class="debt-copy">
+        <div class="debt-title">${mins} min without break</div>
+        <div class="debt-subtitle">Take the next one.</div>
+      </div>`;
+  }
+}
+
+listen('nudge', e => render(e.payload));
+addEventListener('contextmenu', e => e.preventDefault());
+
 </script>
-</body></html>
+</body>
+</html>

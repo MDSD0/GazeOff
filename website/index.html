@@ -1,0 +1,202 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="GazeOff is a quiet Windows companion for healthier screen habits, with smart breaks, blink and posture reminders, and recovery statistics.">
+  <meta name="theme-color" content="#0b162c">
+  <title>GazeOff — Give your eyes somewhere else to be</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,450;1,9..144,350&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="sky" aria-hidden="true"><div class="sky-glow"></div><div class="stars"></div></div>
+
+  <header class="site-header">
+    <a class="brand" href="#top" aria-label="GazeOff home">
+      <img src="assets/tray_blob.png" alt="">
+      <span>GazeOff</span>
+    </a>
+    <nav aria-label="Main navigation">
+      <a href="#how-it-works">How it works</a>
+      <a href="#science">Eye science</a>
+      <a href="#intelligence">Smart pause</a>
+      <a href="#stats">Stats</a>
+      <a href="https://github.com/MDSD0/GazeOff" target="_blank" rel="noreferrer">GitHub</a>
+    </nav>
+    <a class="button button-compact" href="https://github.com/MDSD0/GazeOff/releases/latest">Download</a>
+  </header>
+
+  <main id="top">
+    <section class="hero">
+      <div class="hero-copy">
+        <p class="release"><img src="assets/tray_blob.png" alt=""> GazeOff for Windows</p>
+        <h1>Give your eyes<br>somewhere else to be.</h1>
+        <p class="hero-intro">Brief, well-timed breaks that protect your eyes without treating your work like an interruption.</p>
+        <div class="hero-actions">
+          <a class="button" href="https://github.com/MDSD0/GazeOff/releases/latest">Download for Windows</a>
+          <span>Windows 10 and 11</span>
+        </div>
+      </div>
+
+      <div class="hero-demo" aria-label="GazeOff break demonstration">
+        <div class="desktop-demo">
+          <div class="desktop-icons" aria-hidden="true"><span><i class="bin-icon"></i>Recycle Bin</span><span><i class="folder-icon"></i>Projects</span></div>
+          <div class="work-window">
+            <div class="window-bar"><span class="notepad-mark">N</span><span>Quarterly brief — Notepad</span><div class="window-actions"><i>−</i><i>□</i><i>×</i></div></div>
+            <div class="window-menu"><span>File</span><span>Edit</span><span>View</span></div>
+            <div class="document-lines"><i></i><i></i><i></i><i></i><i></i></div>
+          </div>
+          <div class="windows-taskbar"><span class="windows-mark"><i></i><i></i><i></i><i></i></span><span class="task-search">Search</span><span class="task-app active">N</span><span class="task-app">⌁</span><span class="task-clock">11:42<br>18/06/2026</span></div>
+          <div class="nudge nudge-blink" aria-hidden="true"><svg viewBox="0 0 200 200"><path class="blink-eye" d="M40 100Q60 75 80 100"/><path class="blink-eye right" d="M120 100Q140 75 160 100"/></svg><span>Blink</span></div>
+          <div class="nudge nudge-posture" aria-hidden="true"><svg viewBox="0 0 200 200"><g class="posture-arrow"><path d="M100 145V55M60 95l40-40 40 40"/></g></svg><span>Fix posture</span></div>
+          <div class="cursor-countdown" id="cursorCountdown" hidden>5</div>
+          <div class="break-screen" id="breakScreen">
+            <div class="break-drift"></div>
+            <span class="break-brand">GazeOff</span>
+            <p class="break-message">Gaze off. <i>See how beautiful the sky is.</i></p>
+            <strong>00:25</strong><div class="break-meter"><i></i></div>
+            <span class="break-label">Look far</span>
+          </div>
+        </div>
+        <div class="demo-foot"><p class="demo-caption">Hover over the desktop to watch an automatic break begin.</p><div class="demo-controls"><button type="button" data-nudge="blink">Blink</button><button type="button" data-nudge="posture">Posture</button><button type="button" data-show-break>Break</button></div></div>
+      </div>
+    </section>
+
+    <section class="outcomes" aria-label="Benefits">
+      <p>Less eye strain.</p><p>Fewer tension headaches.</p><p>Better screen habits.</p>
+    </section>
+
+    <section class="science-lab" id="science">
+      <div class="science-intro">
+        <h2>Your eyes behave differently when a screen has their attention.</h2>
+        <p>Try the controls. The science is less abstract when you can see what a workday asks of your eyes and posture.</p>
+      </div>
+      <div class="science-interface">
+        <div class="science-tabs" role="tablist" aria-label="Explore screen health science">
+          <button class="active" type="button" role="tab" aria-selected="true" data-science-tab="breaks">Small breaks</button>
+          <button type="button" role="tab" aria-selected="false" data-science-tab="blink">Blinking</button>
+          <button type="button" role="tab" aria-selected="false" data-science-tab="posture">Viewing distance</button>
+        </div>
+
+        <div class="science-panels">
+          <article class="science-panel" data-science-panel="blink">
+            <div class="blink-lab">
+              <div class="lab-eyes"><i></i><i></i></div>
+              <button type="button" id="blinkNow">Blink now</button>
+              <span id="blinkCount">0 intentional blinks</span>
+            </div>
+            <div class="fact-copy"><strong>Electronic reading changes the blink itself.</strong><p>In a controlled study of 50 readers, every reading task lowered blink rate. Electronic reading was the only condition that also increased incomplete blinks.</p><a href="https://pubmed.ncbi.nlm.nih.gov/26517404/" target="_blank" rel="noreferrer">Read the study</a></div>
+          </article>
+
+          <article class="science-panel" data-science-panel="posture">
+            <div class="distance-lab">
+              <div class="person-mark"><i></i><span></span></div><div class="distance-line"><b id="distanceValue">20 in</b></div><div class="monitor-mark"><i></i></div>
+              <input id="distanceRange" type="range" min="12" max="32" value="20" aria-label="Monitor viewing distance in inches">
+              <p id="distanceStatus">A comfortable minimum.</p>
+            </div>
+            <div class="fact-copy"><strong>Your neck and eyes share the same workstation.</strong><p>OSHA recommends placing the monitor directly in front of you, at least 20 inches away, with the top line at or below eye level.</p><a href="https://www.osha.gov/etools/computer-workstations/components/monitors" target="_blank" rel="noreferrer">OSHA monitor guidance</a></div>
+          </article>
+
+          <article class="science-panel active" data-science-panel="breaks">
+            <div class="reset-lab"><div class="reset-ring"><span id="resetTime">20</span></div><button type="button" id="startReset">Try a 20-second reset</button><p id="resetPrompt">Pick something across the room.</p></div>
+            <div class="fact-copy"><strong>Consistency matters more than drama.</strong><p>In a study of symptomatic computer users, two weeks of 20–20–20 reminders reduced reported digital-eye-strain and dry-eye symptoms. The benefit faded after reminders stopped.</p><a href="https://pubmed.ncbi.nlm.nih.gov/35963776/" target="_blank" rel="noreferrer">Read the study</a></div>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section class="screen-math" aria-label="Screen day calculator">
+      <div><h2>How much recovery fits inside your screen day?</h2><p>Move the slider. This uses GazeOff’s recommended rhythm: twenty minutes of work, 25-second short breaks, and a three-minute break every third cycle.</p></div>
+      <div class="day-calculator">
+        <label for="screenHours">Daily screen time <output id="hoursOutput">8 hours</output></label>
+        <input id="screenHours" type="range" min="2" max="12" step="0.5" value="8">
+        <dl><div><dt>Break opportunities</dt><dd id="breakOutput">24</dd></div><div><dt>Approx. recovery time</dt><dd id="recoveryOutput">31 min</dd></div><div><dt>Longest planned focus block</dt><dd>20 min</dd></div></dl>
+      </div>
+    </section>
+
+    <section class="split-section" id="how-it-works">
+      <div class="section-copy sticky-copy">
+        <h2>Breaks that understand timing.</h2>
+        <p>GazeOff gives you a five-second warning, waits for a natural pause in typing, and keeps every break brief and predictable.</p>
+        <p>Choose a relaxed rhythm, let Smart mode tighten the schedule after skipped breaks, or lock breaks when you need firmer boundaries.</p>
+      </div>
+      <div class="feature-ledger">
+        <article><span>01</span><div><h3>Twenty minutes of work</h3><p>Start with the familiar 20–20–20 rhythm, then tune every interval to suit your day.</p></div></article>
+        <article><span>02</span><div><h3>A warning you can act on</h3><p>A cursor-following countdown appears before the break, with one- and five-minute delay options.</p></div></article>
+        <article><span>03</span><div><h3>Short breaks, longer recovery</h3><p>Quick eye rests are joined by a longer break every few cycles, with an automatic upgrade after extended work.</p></div></article>
+        <article><span>04</span><div><h3>Gentle, then firm</h3><p>Repeated skipping builds recovery debt. Smart mode brings the next break closer until you take one.</p></div></article>
+      </div>
+    </section>
+
+    <section class="smart-section" id="intelligence">
+      <div class="smart-demo" aria-label="Smart pause demonstration">
+        <div class="tray-panel">
+          <div class="tray-health"><span class="mini-ring"></span><span>timer held</span></div>
+          <div class="tray-time">Paused</div>
+          <div class="tray-reason"><span></span>Microsoft Teams is using your microphone</div>
+          <button type="button">Resume manually</button>
+        </div>
+        <div class="detection-list">
+          <div class="active"><span>Calls and meetings</span><b>Paused</b></div>
+          <div><span>Fullscreen video</span><b>Watching</b></div>
+          <div><span>Fullscreen games</span><b>Ready</b></div>
+          <div><span>Time away</span><b>Detected</b></div>
+        </div>
+      </div>
+      <div class="section-copy">
+        <h2>Present when you need it. Invisible when you don’t.</h2>
+        <p>Calls, films, games, and time away are understood automatically. GazeOff holds the timer instead of firing a reminder at the worst possible moment.</p>
+        <ul>
+          <li>Detects microphone and camera activity locally</li>
+          <li>Recognises fullscreen playback and games</li>
+          <li>Asks whether time away counted as a real break</li>
+          <li>Keeps your activity and settings on your computer</li>
+        </ul>
+      </div>
+    </section>
+
+    <section class="stats-section" id="stats">
+      <div class="section-copy stats-copy">
+        <h2>See whether your habits are actually improving.</h2>
+        <p>The new Stats view turns a day at the screen into a clear recovery score—without surveillance, accounts, or a cloud dashboard.</p>
+      </div>
+      <div class="stats-window" aria-label="Recovery stats demonstration">
+        <div class="stats-sidebar">
+          <span class="window-title">GazeOff Studio</span>
+          <nav><span>Breaks</span><span>Reminders</span><span>Appearance</span><span class="selected">Stats</span><span>Advanced</span></nav>
+        </div>
+        <div class="stats-content">
+          <div class="stats-heading"><h3>Today</h3><span>Wednesday, 18 June</span></div>
+          <div class="score-row">
+            <div class="score-ring"><svg viewBox="0 0 120 120"><circle cx="60" cy="60" r="50"/><circle class="score-progress" cx="60" cy="60" r="50"/></svg><strong>86</strong></div>
+            <div><h4>Your eyes could use a little more rest</h4><p>Two focused sessions ran longer than usual.</p></div>
+          </div>
+          <dl class="stat-line"><div><dt>Screen time</dt><dd>5h 42m</dd></div><div><dt>Breaks taken</dt><dd>12</dd></div><div><dt>Break time</dt><dd>18m</dd></div><div><dt>Day streak</dt><dd>6</dd></div></dl>
+          <div class="week-chart"><div style="--h:51%"><i></i><span>Thu</span></div><div style="--h:72%"><i></i><span>Fri</span></div><div style="--h:35%"><i></i><span>Sat</span></div><div style="--h:42%"><i></i><span>Sun</span></div><div style="--h:84%"><i></i><span>Mon</span></div><div style="--h:69%"><i></i><span>Tue</span></div><div class="today" style="--h:63%"><i></i><span>Wed</span></div></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="personalise">
+      <div class="section-copy"><h2>Your break should feel like a break.</h2><p>Choose a time-of-day sky, soften your wallpaper with live blur, hide the message entirely, or let the screen go black. Add a calm sound only if you want one.</p></div>
+      <div class="sky-strip" aria-label="GazeOff time of day skies"><div data-time="Dawn"></div><div data-time="Day"></div><div data-time="Dusk"></div><div data-time="Night"></div></div>
+    </section>
+
+    <section class="closing" id="download">
+      <div><h2>Your eyes have done enough scrolling.</h2><p>Install GazeOff and let the next break find you.</p></div>
+      <a class="button button-light" href="https://github.com/MDSD0/GazeOff/releases/latest" aria-label="Download GazeOff for Windows">Download for Windows</a>
+    </section>
+  </main>
+
+  <footer>
+    <a class="brand" href="#top"><img src="assets/tray_blob.png" alt=""><span>GazeOff</span></a>
+    <p>Quiet recovery for Windows.</p>
+    <div><a href="https://github.com/MDSD0/GazeOff">GitHub</a><a href="https://github.com/MDSD0/GazeOff/releases/latest">Releases</a><a href="mailto:hello@gazeoff.app">Contact</a></div>
+    <p>© 2026 GazeOff</p>
+  </footer>
+  <script src="app.js"></script>
+</body>
+</html>

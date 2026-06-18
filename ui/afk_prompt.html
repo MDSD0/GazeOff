@@ -1,0 +1,182 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="color-scheme" content="dark">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,400;0,9..144,500;0,9..144,600;0,9..144,700;1,9..144,300;1,9..144,400;1,9..144,500;1,9..144,600;1,9..144,700&family=JetBrains+Mono:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; }
+  :root {
+    --bg: rgba(18, 18, 20, 0.96);
+    --border: rgba(255, 255, 255, 0.13);
+    --text: rgba(248, 244, 232, 0.96);
+    --muted: rgba(248, 244, 232, 0.58);
+    --line: rgba(255, 255, 255, 0.08);
+    --accent: #00c9ff;
+    --accent-soft: rgba(0, 201, 255, 0.14);
+    --display: "Fraunces", Georgia, serif;
+    --mono: "JetBrains Mono", ui-monospace, monospace;
+  }
+  :root[data-theme="light"] {
+    --bg: rgba(250, 250, 248, 0.98);
+    --border: rgba(0, 0, 0, 0.14);
+    --text: rgba(20, 20, 18, 0.94);
+    --muted: rgba(20, 20, 18, 0.58);
+    --line: rgba(0, 0, 0, 0.08);
+    --accent-soft: rgba(0, 132, 255, 0.12);
+  }
+  html, body {
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    background: transparent;
+    color: var(--text);
+    font-family: var(--display);
+  }
+  body {
+    padding: 6px;
+    opacity: 0;
+    transform: translateY(6px);
+    transition: opacity 140ms ease, transform 140ms ease;
+  }
+  body.in { opacity: 1; transform: translateY(0); }
+  .card {
+    width: 100%;
+    height: 100%;
+    border: 1px solid var(--border);
+    background: var(--bg);
+    border-radius: 8px;
+    padding: 13px;
+  }
+  .top {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 12px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid var(--line);
+  }
+  .title {
+    font-size: 15px;
+    font-weight: 650;
+    letter-spacing: 0;
+  }
+  .time {
+    color: var(--muted);
+    font-family: var(--mono);
+    font-size: 12px;
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+  }
+  .question {
+    color: var(--muted);
+    font-size: 13px;
+    line-height: 1.35;
+    padding: 10px 0 12px;
+    font-weight: 400;
+  }
+  .actions {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+  }
+  button {
+    position: relative;
+    overflow: hidden;
+    height: 34px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    background: rgba(255, 255, 255, 0.04);
+    color: var(--text);
+    font: inherit;
+    font-size: 13px;
+    font-weight: 650;
+    cursor: pointer;
+  }
+  button span {
+    position: relative;
+    z-index: 1;
+  }
+  button:hover { border-color: rgba(255,255,255,0.24); }
+  button.primary {
+    background: var(--accent-soft);
+    border-color: var(--accent);
+  }
+  button.primary::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: var(--accent-soft);
+    transform: scaleX(var(--fill, 0));
+    transform-origin: left center;
+  }
+</style>
+</head>
+<body>
+  <div class="card">
+    <div class="top">
+      <div class="title">Away detected</div>
+      <div class="time" id="away_time">-- away</div>
+    </div>
+    <div class="question">Did that count as a break, or were you still staring?</div>
+    <div class="actions">
+      <button id="took_break" type="button"><span>Took a break</span></button>
+      <button class="primary" id="still_working" type="button"><span>Still staring</span></button>
+    </div>
+  </div>
+
+<script>
+const listen = window.__TAURI__?.event?.listen || (async()=>{});
+const invoke = window.__TAURI__?.core?.invoke || (async()=>{});
+const $ = id => document.getElementById(id);
+let timer = null;
+let raf = null;
+let answered = false;
+const AUTO_MS = 5000;
+
+function fmt(secs) {
+  const mins = Math.max(1, Math.round((secs || 0) / 60));
+  return `${mins} min away`;
+}
+
+listen('afk-prompt', e => {
+  const p = e.payload || {};
+  answered = false;
+  clearTimeout(timer);
+  cancelAnimationFrame(raf);
+  const started = performance.now();
+  // The countdown fills the auto-default ("Still staring"): if you say nothing,
+  // we assume you were at the screen the whole time, which carries a penalty.
+  const filler = $('still_working');
+  filler.style.setProperty('--fill', '0');
+  if (p.app_theme) {
+    document.documentElement.setAttribute('data-theme', p.app_theme);
+    document.querySelector('meta[name="color-scheme"]').setAttribute('content', p.app_theme);
+  }
+  $('away_time').textContent = fmt(p.idle_secs);
+  document.body.classList.add('in');
+  function tick(now) {
+    const progress = Math.min(1, (now - started) / AUTO_MS);
+    filler.style.setProperty('--fill', progress.toFixed(3));
+    if (progress < 1 && !answered) raf = requestAnimationFrame(tick);
+  }
+  raf = requestAnimationFrame(tick);
+  timer = setTimeout(() => answer(false), AUTO_MS);
+});
+
+function answer(tookBreak) {
+  if (answered) return;
+  answered = true;
+  clearTimeout(timer);
+  cancelAnimationFrame(raf);
+  invoke('answer_afk_prompt', { tookBreak });
+}
+
+$('took_break').onclick = () => answer(true);
+$('still_working').onclick = () => answer(false);
+addEventListener('contextmenu', e => e.preventDefault());
+</script>
+</body>
+</html>

@@ -1,303 +1,1299 @@
 <!doctype html>
-<html><head><meta charset="utf-8"><style>
-  * { margin:0; padding:0; box-sizing:border-box; user-select:none; }
-  html,body { width:100%; height:100%; background:transparent; overflow:hidden;
-    font-family:'Segoe UI Variable Text','Segoe UI',sans-serif; color:#e9e5de; }
-  .frame { position:fixed; inset:8px; border-radius:22px; overflow:hidden;
-    border:1px solid rgba(255,255,255,.09);
-    background:linear-gradient(165deg, rgba(32,30,28,.94), rgba(20,19,17,.86));
-    box-shadow:0 20px 70px rgba(0,0,0,.55), inset 0 1px 0 rgba(255,255,255,.06);
-    display:flex; flex-direction:column; }
-  .frame::before { content:""; position:absolute; inset:0; pointer-events:none; opacity:.045;
-    mix-blend-mode:overlay;
-    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E"); }
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="color-scheme" content="dark">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,400;0,9..144,500;0,9..144,600;0,9..144,700;1,9..144,300;1,9..144,400;1,9..144,500;1,9..144,600;1,9..144,700&family=JetBrains+Mono:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; }
 
-  .bar { display:flex; align-items:center; padding:18px 24px 12px; flex:none; z-index:1; }
-  .brand { font-family:'Segoe UI Variable Display','Segoe UI',sans-serif;
-    font-size:15px; font-weight:350; color:rgba(233,229,222,.45); flex:1; }
-  .brand b { font-weight:600; color:rgba(233,229,222,.8); }
-  .x { width:30px; height:30px; border-radius:50%; border:none; cursor:pointer;
-    background:rgba(255,255,255,.07); color:rgba(233,229,222,.6); font-size:14px; line-height:1; }
-  .x:hover { background:rgba(255,255,255,.14); color:#f2efe9; }
+  /* Scrollbar */
+  ::-webkit-scrollbar { width: 12px; height: 12px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: var(--c-rule); border-radius: 6px; border: 3px solid transparent; background-clip: content-box; }
+  ::-webkit-scrollbar-thumb:hover { background: var(--c-ink-faint); border: 3px solid transparent; background-clip: content-box; }
 
-  .scroll { overflow-y:auto; padding:0 24px 26px; z-index:1; }
-  .scroll::-webkit-scrollbar { width:8px; }
-  .scroll::-webkit-scrollbar-thumb { background:rgba(255,255,255,.12); border-radius:4px; }
-  .lede { font-size:13.5px; color:rgba(233,229,222,.55); line-height:1.5; margin:2px 2px 18px; }
+  /* Themes */
+  :root[data-theme="light"] {
+    --c-bg: rgba(255, 255, 255, 0.55);
+    --c-panel: rgba(255, 255, 255, 0.85);
+    --c-ink: #111;
+    --c-ink-soft: #444;
+    --c-ink-faint: #888;
+    --c-rule: rgba(0, 0, 0, 0.1);
+    --c-hover: rgba(0, 0, 0, 0.05);
+    --c-accent: #0099CC;
+  }
+  :root[data-theme="light"] select option { background: #fff; color: #111; }
 
-  .sect { border:1px solid rgba(255,255,255,.07); border-radius:18px;
-    background:rgba(255,255,255,.025); padding:16px 18px 6px; margin-bottom:14px; }
-  .sect > h2 { display:flex; align-items:center; gap:9px; font-size:11px; font-weight:600;
-    letter-spacing:.13em; text-transform:uppercase; color:rgba(233,229,222,.42);
-    margin-bottom:10px; }
-  .sect > h2 svg { width:15px; height:15px; stroke:rgba(233,229,222,.45); fill:none;
-    stroke-width:1.6; stroke-linecap:round; stroke-linejoin:round; }
+  :root {
+    --c-bg: rgba(12, 14, 18, 0.65);
+    --c-ink: #f7eedb;
+    --c-ink-soft: rgba(247, 238, 219, 0.78);
+    --c-ink-faint: rgba(247, 238, 219, 0.45);
+    --c-accent: #00C9FF;
+    --c-rule: rgba(247, 238, 219, 0.12);
+    --c-hover: rgba(255, 255, 255, 0.08);
 
-  .modes { display:flex; gap:9px; margin-bottom:12px; }
-  .mode { flex:1; padding:14px 13px; border-radius:14px; cursor:pointer;
-    border:1.5px solid rgba(255,255,255,.09); background:rgba(255,255,255,.03);
-    transition:border-color .3s, background .3s; }
-  .mode:hover { background:rgba(255,255,255,.07); }
-  .mode.sel { border-color:rgba(158,182,168,.6); background:rgba(158,182,168,.08); }
-  .mode .t { font-size:14px; font-weight:500; margin-bottom:4px; }
-  .mode .d { font-size:11.5px; color:rgba(233,229,222,.55); line-height:1.4; }
+    --display: 'Fraunces', Georgia, serif;
+    --mono: 'JetBrains Mono', ui-monospace, monospace;
+    --ease: cubic-bezier(.2, .6, .2, 1);
+  }
 
-  .row { display:flex; align-items:center; gap:10px; padding:12px 0;
-    border-bottom:1px solid rgba(255,255,255,.05); min-height:50px; }
-  .sect .row:last-child { border-bottom:none; }
-  .row .label { flex:1; font-size:13.5px; }
-  .row .hint { font-size:11.5px; color:rgba(233,229,222,.42); margin-top:2px; line-height:1.35; }
-  .val { font-size:12.5px; color:rgba(233,229,222,.55); font-variant-numeric:tabular-nums;
-    min-width:62px; text-align:right; }
-  input[type=range] { width:150px; accent-color:#8aa294; }
-  select { font:inherit; font-size:12.5px; border:1px solid rgba(255,255,255,.14);
-    border-radius:9px; padding:5px 8px; background:rgba(35,33,31,.95); color:#e9e5de; }
+  html, body {
+    width: 100%; height: 100%; overflow: hidden;
+    background: var(--c-bg); color: var(--c-ink);
+    font-family: var(--display);
+    transition: background 1.2s var(--ease);
+  }
 
-  .switch { position:relative; width:42px; height:24px; flex:none; cursor:pointer; }
-  .switch input { opacity:0; width:0; height:0; }
-  .knob { position:absolute; inset:0; border-radius:999px; background:rgba(255,255,255,.13);
-    transition:background .25s; }
-  .knob::after { content:""; position:absolute; top:3px; left:3px; width:18px; height:18px;
-    border-radius:50%; background:#cfcabf; box-shadow:0 1px 4px rgba(0,0,0,.35);
-    transition:transform .25s cubic-bezier(.4,0,.2,1), background .25s; }
-  .switch input:checked + .knob { background:#7e9486; }
-  .switch input:checked + .knob::after { transform:translateX(18px); background:#fff; }
+  .app {
+    position: fixed; inset: 0; display: grid; grid-template-columns: 260px 1fr;
+    height: 100vh; width: 100vw; overflow: hidden;
+  }
 
-  .info { position:relative; width:17px; height:17px; flex:none; border-radius:50%;
-    border:1px solid rgba(233,229,222,.28); color:rgba(233,229,222,.5);
-    font-size:10.5px; font-style:italic; font-family:Georgia,serif;
-    display:inline-flex; align-items:center; justify-content:center; cursor:help; }
-  .info .tip { position:absolute; bottom:24px; right:-10px; width:280px; padding:11px 13px;
-    border-radius:12px; font-style:normal;
-    font-family:'Segoe UI Variable Text','Segoe UI',sans-serif;
-    font-size:12px; line-height:1.5; color:rgba(233,229,222,.9); text-align:left;
-    background:rgba(40,38,35,.98); border:1px solid rgba(255,255,255,.12);
-    box-shadow:0 10px 36px rgba(0,0,0,.55);
-    opacity:0; pointer-events:none; transition:opacity .3s ease; z-index:9; }
-  .info:hover .tip { opacity:1; }
+  .sidebar {
+    position: relative;
+    display: flex; flex-direction: column;
+    height: 100%; padding: 24px 0;
+    border-right: 1px solid var(--c-rule);
+    overflow-y: auto; min-height: 0;
+  }
 
-  .sample { font-size:13px; color:rgba(233,229,222,.62); font-style:italic; cursor:pointer;
-    padding:10px 14px; border-radius:12px; background:rgba(255,255,255,.03);
-    border:1px dashed rgba(255,255,255,.14); margin:4px 0 12px;
-    transition:background .2s; }
-  .sample:hover { background:rgba(255,255,255,.06); }
-  .sample::after { content:"  ↻"; opacity:.4; font-style:normal; font-size:11px; }
+  .brandlock { padding: 0 24px 32px 24px; }
+  .brandname { font-size: 28px; font-weight: 300; letter-spacing: -0.02em; }
 
-  .days { display:flex; gap:6px; }
-  .day { width:34px; height:30px; border-radius:9px; font-size:11px; font-weight:600;
-    display:flex; align-items:center; justify-content:center; cursor:pointer;
-    border:1px solid rgba(255,255,255,.10); background:rgba(255,255,255,.03);
-    color:rgba(233,229,222,.45); transition:all .2s; }
-  .day.on { background:rgba(158,182,168,.30); border-color:rgba(158,182,168,.75);
-    color:#eef4f0; box-shadow:0 0 10px rgba(158,182,168,.18); }
-</style></head>
+  .menu-group-title {
+    padding: 24px 24px 8px 24px;
+    font-family: var(--mono); font-size: 10px; font-weight: 400;
+    letter-spacing: 0.15em; text-transform: uppercase; color: var(--c-ink-faint);
+  }
+
+  .menu-item {
+    appearance: none; background: transparent; border: none;
+    position: relative;
+    width: 100%; text-align: left; padding: 12px 24px;
+    display: flex; justify-content: space-between; align-items: baseline;
+    cursor: pointer; color: var(--c-ink-soft); font-family: var(--display); font-size: 16px;
+    transition: background 200ms var(--ease), padding-left 300ms var(--ease), color 200ms var(--ease);
+  }
+  .menu-item:hover { background: var(--c-hover); padding-left: 32px; color: var(--c-ink); }
+  .menu-item.active { background: var(--c-hover); padding-left: 32px; color: var(--c-ink); }
+
+
+  .main {
+    position: relative; min-width: 0; display: flex; flex-direction: column;
+    min-height: 0; height: 100%;
+  }
+
+  .topbar {
+    height: 80px; display: flex; align-items: center; justify-content: space-between;
+    padding: 0 48px; flex-shrink: 0;
+  }
+  .title { font-size: 32px; font-weight: 300; }
+
+  /* Custom Titlebar */
+  .titlebar {
+    position: absolute; top: 0; left: 0; right: 0; height: 36px;
+    display: flex; justify-content: space-between; align-items: center;
+    padding-left: 24px; z-index: 9999;
+  }
+  .titlebar-text {
+    font-family: var(--display); font-size: 14px; font-weight: 300; color: var(--c-ink-faint); pointer-events: none;
+  }
+  .titlebar-controls { display: flex; height: 100%; }
+  .titlebar-btn {
+    appearance: none; background: transparent; border: none;
+    width: 46px; height: 100%; color: var(--c-ink);
+    display: flex; align-items: center; justify-content: center;
+    transition: background 150ms var(--ease); cursor: default;
+    font-family: var(--mono); font-size: 12px;
+  }
+  :root[data-theme="light"] .titlebar-btn:hover { background: rgba(0, 0, 0, 0.08); }
+  :root[data-theme="dark"] .titlebar-btn:hover { background: rgba(255, 255, 255, 0.08); }
+  .titlebar-btn.close:hover { background: #e81123 !important; color: white !important; }
+
+  .content {
+    flex: 1; overflow-y: auto; overflow-x: hidden;
+    padding: 20px 48px 50vh; scroll-behavior: smooth; min-height: 0;
+  }
+
+  .page {
+    display: block; max-width: 720px; margin-bottom: 60px; scroll-margin-top: 20px;
+    opacity: 0.15; transform: translateY(20px) scale(0.97); pointer-events: none;
+    transition: all 0.6s var(--ease);
+  }
+  .page.active-page {
+    opacity: 1; transform: translateY(0) scale(1); pointer-events: auto;
+  }
+
+  .group-title {
+    font-family: var(--mono); font-size: 11px; color: var(--c-ink-faint);
+    letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 16px;
+    border-bottom: 1px solid var(--c-rule); padding-bottom: 8px;
+  }
+
+  .row {
+    min-height: 60px; display: flex; align-items: center; gap: 16px;
+    padding: 12px 0; border-bottom: 1px solid rgba(247, 238, 219, 0.05); cursor: default;
+  }
+  .row:last-child { border-bottom: none; }
+
+  .label { flex: 1; min-width: 0; font-size: 16px; font-weight: 300; color: var(--c-ink); }
+  .hint { margin-top: 6px; color: var(--c-ink-faint); font-family: var(--display); font-size: 14px; font-weight: 300; line-height: 1.4; }
+  .muted { color: var(--c-ink-faint); font-family: var(--mono); font-size: 13px; }
+
+  /* Stats page */
+  .score-card {
+    display: flex; align-items: center; gap: 28px;
+    padding: 28px; border: 1px solid var(--c-rule); border-radius: 14px;
+    background: var(--c-hover); margin-bottom: 28px;
+  }
+  .score-ring { position: relative; width: 120px; height: 120px; flex-shrink: 0; }
+  .score-ring svg { width: 120px; height: 120px; transform: rotate(-90deg); }
+  .score-ring circle { fill: none; stroke-width: 9; stroke-linecap: round; }
+  .score-ring .bg { stroke: var(--c-rule); }
+  .score-ring .fg { transition: stroke-dasharray 1s var(--ease), stroke 1s var(--ease); }
+  .score-num {
+    position: absolute; inset: 0; display: flex; align-items: center; justify-content: center;
+    font-family: var(--display); font-size: 34px; font-weight: 300; font-variant-numeric: tabular-nums;
+  }
+  .score-copy { min-width: 0; }
+  .score-head {
+    font-family: var(--mono); font-size: 11px; letter-spacing: 0.15em;
+    text-transform: uppercase; color: var(--c-ink-faint); margin-bottom: 8px;
+  }
+  .score-msg { font-size: 24px; font-weight: 300; font-style: italic; line-height: 1.2; }
+  .score-sub { margin-top: 8px; color: var(--c-ink-faint); font-size: 14px; font-weight: 300; }
+
+  .stat-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 32px; }
+  .stat-tile { padding: 18px; border: 1px solid var(--c-rule); border-radius: 12px; }
+  .stat-val {
+    font-family: var(--display); font-size: 28px; font-weight: 300;
+    font-variant-numeric: tabular-nums; line-height: 1;
+  }
+  .stat-lab {
+    margin-top: 8px; font-family: var(--mono); font-size: 10px;
+    letter-spacing: 0.12em; text-transform: uppercase; color: var(--c-ink-faint);
+  }
+
+  .bars { display: flex; align-items: flex-end; gap: 10px; height: 170px; padding-top: 8px; }
+  .bar-col {
+    flex: 1; display: flex; flex-direction: column; align-items: center; gap: 8px;
+    height: 100%; justify-content: flex-end; position: relative; outline: none;
+  }
+  .bar {
+    width: 100%; max-width: 34px; border-radius: 6px 6px 2px 2px; min-height: 3px;
+    background: var(--c-rule); transition: height 0.8s var(--ease), background 0.8s var(--ease);
+  }
+  .bar.good { background: #4ade80; }
+  .bar.mid  { background: #fbbf24; }
+  .bar.bad  { background: #ef4444; }
+  .bar-day { font-family: var(--mono); font-size: 10px; color: var(--c-ink-faint); }
+  .bar-tooltip {
+    position: absolute; z-index: 4; top: 4px; left: 50%; transform: translateX(-50%);
+    width: max-content; max-width: 190px; padding: 8px 10px;
+    border: 1px solid var(--c-rule); border-radius: 6px; background: #151b22;
+    color: var(--c-ink); font-family: var(--mono); font-size: 10px; line-height: 1.5;
+    opacity: 0; pointer-events: none; transition: opacity 140ms ease;
+  }
+  :root[data-theme="light"] .bar-tooltip { background: #fff; }
+  .bar-tooltip span { display: block; color: var(--c-ink-faint); }
+  .bar-col:hover .bar-tooltip, .bar-col:focus-visible .bar-tooltip { opacity: 1; }
+  .bar-col:focus-visible .bar { outline: 2px solid var(--c-accent); outline-offset: 3px; }
+
+
+  /* Refined Controls */
+  input[type=number] {
+    width: 60px; border: none; outline: none; background: transparent;
+    color: var(--c-accent); font-family: var(--mono); font-size: 16px; font-weight: 400;
+    text-align: right; font-variant-numeric: tabular-nums;
+  }
+  input[type=number]:focus { background: var(--c-hover); border-radius: 4px; }
+  input[type=number]::-webkit-outer-spin-button, input[type=number]::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+
+  /* Custom Selects */
+  .custom-select { position: relative; user-select: none; }
+  .select-trigger {
+    height: 32px; min-width: 140px; border: 1px solid var(--c-rule); border-radius: 8px;
+    background: var(--c-rule); color: var(--c-ink); font-family: var(--mono); font-size: 13px;
+    padding: 0 32px 0 12px; display: flex; align-items: center; justify-content: space-between;
+    cursor: pointer; transition: all 200ms ease;
+  }
+  .select-trigger:hover { border-color: var(--c-ink-faint); }
+  .custom-select.open .select-trigger { border-color: var(--c-accent); box-shadow: 0 0 0 2px rgba(0, 201, 255, 0.2); }
+
+  .select-arrow {
+    position: absolute; right: 12px; width: 16px; height: 16px; pointer-events: none;
+    background: url('data:image/svg+xml;utf8,<svg fill="none" stroke="%23888" stroke-width="2" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"></path></svg>') no-repeat center;
+  }
+  .custom-select.open .select-arrow { transform: rotate(180deg); }
+
+  .select-menu {
+    position: absolute; top: calc(100% + 4px); left: 0; z-index: 100; min-width: 100%;
+    background: #1e2e3b; border: 1px solid var(--c-rule); border-radius: 8px;
+    padding: 4px; display: flex; flex-direction: column; gap: 2px;
+    opacity: 0; pointer-events: none; transform: translateY(-4px);
+    transition: all 200ms ease; box-shadow: 0 4px 12px rgba(0,0,0,0.4);
+  }
+  :root[data-theme="light"] .select-menu { background: #fff; }
+
+  .custom-select.open .select-menu { opacity: 1; pointer-events: auto; transform: translateY(0); }
+
+  .select-item {
+    padding: 8px 12px; font-family: var(--mono); font-size: 13px; color: var(--c-ink-soft);
+    border-radius: 6px; cursor: pointer; transition: all 150ms ease; white-space: nowrap;
+  }
+  .select-item:hover { background: rgba(0, 201, 255, 0.1); color: var(--c-accent); }
+  .select-item.selected { background: rgba(0, 201, 255, 0.2); color: var(--c-accent); }
+
+  .time-unit-wrapper .select-trigger {
+    min-width: 0; height: 26px; border: none; background: transparent; padding: 0 24px 0 4px;
+    color: var(--c-ink-soft);
+  }
+  .time-unit-wrapper.open .select-trigger { box-shadow: none; border-color: transparent; }
+  .time-unit-wrapper .select-arrow { right: 4px; }
+  .time-unit-wrapper .select-menu { min-width: 80px; left: auto; right: 0; }
+
+  /* Premium Slider */
+  .slider-group { display: flex; align-items: center; gap: 16px; width: 100%; max-width: 320px; }
+  input[type=range] {
+    flex: 1; accent-color: var(--c-accent); cursor: pointer; height: 4px; border-radius: 2px;
+    background: var(--c-rule); outline: none; -webkit-appearance: none; width: 100%; max-width: 320px;
+  }
+  input[type=range]::-webkit-slider-thumb {
+    -webkit-appearance: none; width: 16px; height: 16px; border-radius: 50%;
+    background: var(--c-accent); box-shadow: 0 2px 8px rgba(0,0,0,0.4); border: 2px solid var(--c-bg);
+  }
+  .time-inputs { display: flex; align-items: center; background: rgba(0,0,0,0.2); border-radius: 8px; padding: 2px 6px; border: 1px solid var(--c-rule); }
+  :root[data-theme="light"] .time-inputs { background: rgba(0,0,0,0.05); }
+  .time-inputs input[type=number] { width: 50px; font-size: 14px; text-align: center; }
+  .time-inputs select.time-unit { border: none; min-width: 0; padding: 0 4px; font-size: 12px; height: 26px; color: var(--c-ink-soft); }
+  .time-inputs select.time-unit:focus { border: none; }
+
+
+  .switch { position: relative; width: 44px; height: 26px; flex: none; cursor: pointer; }
+  .switch input { display: none; }
+  .knob { position: absolute; inset: 0; border-radius: 13px; background: rgba(247, 238, 219, 0.1); border: 1px solid var(--c-rule); transition: 0.2s var(--ease); }
+  .knob:after { content: ""; position: absolute; width: 18px; height: 18px; left: 3px; top: 3px; border-radius: 50%; background: var(--c-ink-faint); transition: 0.2s var(--ease); }
+  .switch input:checked + .knob { background: var(--c-accent); border-color: transparent; }
+  .switch input:checked + .knob:after { transform: translateX(18px); background: #111; }
+
+  /* Modes */
+  .mode-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; padding: 16px 0 32px; }
+  .mode { border: 1px solid var(--c-rule); border-radius: 8px; padding: 16px; cursor: pointer; transition: all 0.2s var(--ease); }
+  .mode:hover { background: var(--c-hover); }
+  .mode.sel { border-color: var(--c-accent); background: rgba(0, 201, 255, 0.05); }
+  .mode-title { font-size: 16px; font-weight: 400; margin-bottom: 6px; }
+  .mode-sub { font-size: 13px; color: var(--c-ink-faint); font-family: var(--display); line-height: 1.4; }
+  .preview-btn {
+    appearance: none; background: transparent; border: 1px solid var(--c-rule); border-radius: 6px;
+    color: var(--c-ink-soft); font-family: var(--mono); font-size: 11px; padding: 7px 10px;
+    cursor: pointer; transition: color 160ms var(--ease), border-color 160ms var(--ease), background 160ms var(--ease);
+  }
+  .preview-btn:hover { color: var(--c-ink); border-color: var(--c-ink-faint); background: var(--c-hover); }
+  .bg-choice-grid {
+    display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px;
+    width: 100%; max-width: 430px;
+  }
+  .bg-choice {
+    appearance: none; border: 1px solid var(--c-rule); background: rgba(255,255,255,0.02);
+    color: var(--c-ink-soft); border-radius: 8px; padding: 10px; cursor: pointer;
+    font-family: var(--display); text-align: left; position: relative;
+    transition: border-color 180ms var(--ease), background 180ms var(--ease);
+  }
+  .bg-choice:hover { border-color: var(--c-ink-faint); background: var(--c-hover); }
+  .bg-choice.sel { border-color: var(--c-accent); background: rgba(0, 201, 255, 0.04); }
+  .bg-thumb {
+    height: 74px; border-radius: 5px; border: none; margin-bottom: 8px; overflow: hidden;
+    position: relative; background: #111;
+  }
+  .bg-thumb.wallpaper {
+    background:#1d222a;
+  }
+  .wallpaper-preview-img {
+    position:absolute; inset:-24px; background-color:#1d222a; background-size:cover; background-position:center;
+    filter:blur(var(--preview-blur, 0px)); transform:scale(1.08); pointer-events:none;
+  }
+  .bg-thumb.wallpaper::after {
+    content:""; position:absolute; inset:0;
+    background:
+      radial-gradient(ellipse at 20% 20%, rgba(255,255,255,.14), transparent 34%),
+      rgba(0,0,0,.08);
+    pointer-events:none;
+  }
+  .bg-thumb.sky {
+    background:
+      radial-gradient(ellipse 60% 40% at 30% 65%, color-mix(in oklab, #f2d7b8, transparent 70%) 0%, transparent 60%),
+      radial-gradient(ellipse 40% 30% at 70% 70%, color-mix(in oklab, #b56953, transparent 75%) 0%, transparent 55%),
+      linear-gradient(to bottom, #1a1730 0%, #2d2042 22%, #5e3454 45%, #b56953 72%, #e8a874 90%, #f2d7b8 100%);
+  }
+  .bg-thumb.sky::after {
+    content:""; position:absolute; inset:0; opacity:.14; mix-blend-mode:overlay;
+    background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='140' height='90'><filter id='g'><feTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' seed='7'/></filter><rect width='100%25' height='100%25' filter='url(%23g)' opacity='.5'/></svg>");
+  }
+  .sky-catalog {
+    position:absolute; left:10px; right:10px; bottom:10px; z-index:2; display:grid; grid-template-columns:repeat(4, 1fr); gap:6px;
+    opacity:0; transform:translateY(4px); pointer-events:none; transition:opacity 160ms var(--ease), transform 160ms var(--ease);
+  }
+  .bg-choice:hover .sky-catalog, .bg-choice:focus-visible .sky-catalog { opacity:1; transform:translateY(0); }
+  .sky-chip { height:26px; border-radius:5px; border:none; overflow:hidden; box-shadow: inset 0 0 0 1px rgba(255,255,255,.08); }
+  .sky-chip.dawn { background:radial-gradient(ellipse 80% 45% at 50% 110%,rgba(242,215,184,.9),transparent 62%),radial-gradient(ellipse 42% 28% at 20% 72%,rgba(232,168,116,.35),transparent 60%),linear-gradient(to bottom,#17233e,#526d8f,#e8a874); }
+  .sky-chip.day { background:radial-gradient(ellipse 80% 45% at 50% 110%,rgba(215,238,248,.9),transparent 58%),radial-gradient(ellipse 46% 28% at 68% 70%,rgba(182,203,217,.45),transparent 60%),linear-gradient(to bottom,#0b4f8f,#3e86bd,#d7eef8); }
+  .sky-chip.dusk { background:radial-gradient(ellipse 80% 45% at 50% 110%,rgba(242,215,184,.9),transparent 62%),radial-gradient(ellipse 42% 28% at 20% 72%,rgba(181,105,83,.42),transparent 60%),linear-gradient(to bottom,#1a1730,#5e3454,#e8a874); }
+  .sky-chip.night { background:radial-gradient(ellipse 80% 45% at 50% 110%,rgba(58,42,68,.75),transparent 62%),radial-gradient(ellipse 42% 28% at 70% 70%,rgba(94,52,84,.28),transparent 60%),linear-gradient(to bottom,#050714,#14122a,#3a2a44); }
+  .bg-name { font-size: 14px; color: var(--c-ink); }
+  .bg-sub { margin-top: 2px; font-size: 12px; color: var(--c-ink-faint); font-family: var(--mono); }
+
+  /* Tooltips */
+  .tooltip-icon {
+    display: inline-flex; align-items: center; justify-content: center;
+    width: 16px; height: 16px; border-radius: 50%;
+    background: var(--c-rule); color: var(--c-ink-faint);
+    font-size: 11px; font-weight: 500; cursor: help;
+    position: relative; margin-left: 8px; font-family: var(--mono);
+  }
+  .tooltip-icon:hover { background: var(--c-accent); color: #111; }
+  .tooltip-content {
+    position: absolute; bottom: 100%; left: 50%; transform: translateX(-50%) translateY(-8px);
+    width: 260px; padding: 12px; background: var(--c-bg); border: 1px solid var(--c-rule);
+    border-radius: 6px; box-shadow: 0 4px 24px rgba(0,0,0,0.4);
+    opacity: 0; visibility: hidden; transition: all 200ms var(--ease);
+    color: var(--c-ink); font-family: var(--display); font-size: 12px; line-height: 1.5;
+    z-index: 100; text-align: left; pointer-events: none;
+    backdrop-filter: blur(10px);
+  }
+  .tooltip-content strong {
+    display: block; font-family: var(--mono); font-size: 10px; color: var(--c-accent); margin-bottom: 4px; text-transform: uppercase; letter-spacing: 0.05em;
+  }
+  .tooltip-icon:hover .tooltip-content {
+    opacity: 1; visibility: visible; transform: translateX(-50%) translateY(-4px);
+  }
+</style>
+</head>
 <body>
-<div class="frame">
-  <div class="bar" data-tauri-drag-region>
-    <div class="brand" data-tauri-drag-region>gaze<b>Off</b> &nbsp;·&nbsp; settings</div>
-    <button class="x" onclick="closeWin()">✕</button>
-  </div>
-  <div class="scroll">
-    <div class="lede">A few choices. The defaults are already good — change only what you feel.</div>
-
-    <div class="sect">
-      <h2><svg viewBox="0 0 24 24"><path d="M12 3l7 4v5c0 4.5-3 7.5-7 9-4-1.5-7-4.5-7-9V7z"/></svg>Firmness</h2>
-      <div class="modes" id="modes">
-        <div class="mode" data-mode="lenient"><div class="t">Lenient</div>
-          <div class="d">Color and soft nudges only. Skipping is always allowed.</div></div>
-        <div class="mode" data-mode="smart"><div class="t">Smart Break</div>
-          <div class="d">Escalates gently as breaks are skipped. Recommended.</div></div>
-        <div class="mode" data-mode="focused"><div class="t">Focused</div>
-          <div class="d">Breaks cannot be skipped. For when you mean it.</div></div>
-      </div>
-      <div class="row" id="forceRow">
-        <div class="label">Hold firm after three skipped breaks
-          <div class="hint">The next break can't be skipped — it can still end early.</div></div>
-        <div class="info">i<span class="tip">Several consecutive skipped breaks across a long session is a different physiological situation than one. Escalation only happens when strain has genuinely accumulated.</span></div>
-        <label class="switch"><input type="checkbox" id="force_due"><span class="knob"></span></label>
-      </div>
-    </div>
-
-    <div class="sect">
-      <h2><svg viewBox="0 0 24 24"><path d="M4 17c2-6 5-9 8-9s6 3 8 9M9 8c.8-1.8 1.8-3 3-3s2.2 1.2 3 3"/></svg>Voice</h2>
-      <div class="row">
-        <div class="label">Playful mode
-          <div class="hint">Same app, more internet. Off by default.</div></div>
-        <label class="switch"><input type="checkbox" id="playful"><span class="knob"></span></label>
-      </div>
-      <div class="sample" id="sample" title="Click for another line"></div>
-    </div>
-
-    <div class="sect">
-      <h2><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5"/><path d="M12 7.5V12l3 2"/></svg>Rhythm</h2>
-      <div class="row">
-        <div class="label">Time between breaks</div>
-        <div class="info">i<span class="tip">Frequent short breaks reduce eye irritation and accommodation fatigue. Self-paced or frequent breaks may outperform rigid fixed intervals.</span></div>
-        <input type="range" id="interval_min" min="10" max="60" step="5"><div class="val" id="v_interval"></div>
-      </div>
-      <div class="row">
-        <div class="label">Short break length</div>
-        <input type="range" id="short_secs" min="20" max="90" step="5"><div class="val" id="v_short"></div>
-      </div>
-      <div class="row">
-        <div class="label">Long break every</div>
-        <div class="info">i<span class="tip">Twenty-second micro-breaks may be too short to fully release accommodative fatigue. Longer breaks every hour have stronger evidence behind them.</span></div>
-        <input type="range" id="long_every" min="2" max="5" step="1"><div class="val" id="v_every"></div>
-      </div>
-      <div class="row">
-        <div class="label">Long break length</div>
-        <input type="range" id="long_min" min="3" max="10" step="1"><div class="val" id="v_long"></div>
-      </div>
-      <div class="row">
-        <div class="label">Heads-up before a break
-          <div class="hint">A quiet pill near the clock, with time to find a stopping point.</div></div>
-        <select id="lead_secs"><option value="30">30 s</option><option value="60">1 min</option><option value="90">90 s</option></select>
-        <label class="switch"><input type="checkbox" id="prebreak"><span class="knob"></span></label>
-      </div>
-    </div>
-
-    <div class="sect">
-      <h2><svg viewBox="0 0 24 24"><path d="M3 12c2.5 3.8 6 5.6 9 5.6s6.5-1.8 9-5.6M12 17.6V20"/></svg>Small reminders</h2>
-      <div class="row">
-        <div class="label">Blink reminders</div>
-        <div class="info">i<span class="tip">Blink rate drops from 15+ per minute to 4–6 during screen use — and most of those are incomplete. Full, slow blinks restore the tear film.</span></div>
-        <input type="range" id="blink_min" min="5" max="30" step="5"><div class="val" id="v_blink"></div>
-        <label class="switch"><input type="checkbox" id="blink"><span class="knob"></span></label>
-      </div>
-      <div class="row">
-        <div class="label">Posture reminders</div>
-        <div class="info">i<span class="tip">Eye strain and neck–shoulder pain co-occur in over 63% of screen-heavy users. A small posture reset addresses both at once.</span></div>
-        <input type="range" id="posture_min" min="15" max="60" step="5"><div class="val" id="v_post"></div>
-        <label class="switch"><input type="checkbox" id="posture"><span class="knob"></span></label>
-      </div>
-    </div>
-
-    <div class="sect">
-      <h2><svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="13" rx="2"/><path d="M9 21h6"/></svg>Awareness</h2>
-      <div class="row">
-        <div class="label">Hold breaks during fullscreen
-          <div class="hint">Games, video, presentations — gazeOff waits.</div></div>
-        <label class="switch"><input type="checkbox" id="smart_fullscreen"><span class="knob"></span></label>
-      </div>
-      <div class="row">
-        <div class="label">Cooldown after fullscreen ends
-          <div class="hint">A moment to land before a pending break appears.</div></div>
-        <select id="cooldown_secs">
-          <option value="0">none</option><option value="30">30 s</option>
-          <option value="60">1 min</option><option value="120">2 min</option>
-          <option value="300">5 min</option></select>
-      </div>
-      <div class="row">
-        <div class="label">Pause the timer when away for</div>
-        <select id="idle_pause">
-          <option value="30">30 s</option><option value="60">1 min</option>
-          <option value="120">2 min</option></select>
-      </div>
-      <div class="row">
-        <div class="label">Count it as a real break after
-          <div class="hint">A coffee run resets the session. A glance away doesn't.</div></div>
-        <select id="idle_reset">
-          <option value="180">3 min</option><option value="300">5 min</option>
-          <option value="600">10 min</option></select>
-      </div>
-    </div>
-
-    <div class="sect">
-      <h2><svg viewBox="0 0 24 24"><path d="M12 3v2M12 19v2M3 12h2M19 12h2M5.6 5.6l1.4 1.4M17 17l1.4 1.4M5.6 18.4L7 17M17 7l1.4-1.4"/><circle cx="12" cy="12" r="4"/></svg>Hours &amp; days</h2>
-      <div class="row">
-        <div class="label">Active hours
-          <div class="hint">Outside these hours, gazeOff stays silent.</div></div>
-        <select id="hours_start"></select><span style="color:rgba(233,229,222,.4)">to</span><select id="hours_end"></select>
-      </div>
-      <div class="row">
-        <div class="label">Active days</div>
-        <div class="days" id="days"></div>
-      </div>
-    </div>
-
-    <div class="sect">
-      <h2><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19 12a7 7 0 0 0-.1-1.2l2-1.6-2-3.4-2.4 1a7 7 0 0 0-2-1.2L14 3h-4l-.5 2.6a7 7 0 0 0-2 1.2l-2.4-1-2 3.4 2 1.6A7 7 0 0 0 5 12c0 .4 0 .8.1 1.2l-2 1.6 2 3.4 2.4-1a7 7 0 0 0 2 1.2L10 21h4l.5-2.6a7 7 0 0 0 2-1.2l2.4 1 2-3.4-2-1.6c.06-.4.1-.8.1-1.2z"/></svg>General</h2>
-      <div class="row">
-        <div class="label">Start with Windows</div>
-        <label class="switch"><input type="checkbox" id="autostart"><span class="knob"></span></label>
-      </div>
-      <div class="row">
-        <div class="label">Soft chime when a break completes</div>
-        <label class="switch"><input type="checkbox" id="sound"><span class="knob"></span></label>
-      </div>
-    </div>
+<div class="titlebar" data-tauri-drag-region>
+  <div class="titlebar-text">GazeOff</div>
+  <div class="titlebar-controls">
+    <button type="button" class="titlebar-btn" title="Minimize" aria-label="Minimize" onclick="window.__TAURI__.core.invoke('settings_window_action', { action: 'minimize' })">
+      <svg width="10" height="10" viewBox="0 0 10 10"><line x1="0" y1="5" x2="10" y2="5" stroke="currentColor" stroke-width="1"/></svg>
+    </button>
+    <button type="button" class="titlebar-btn" title="Maximize or restore" aria-label="Maximize or restore" onclick="window.__TAURI__.core.invoke('settings_window_action', { action: 'maximize' })">
+      <svg width="10" height="10" viewBox="0 0 10 10"><rect x="0.5" y="0.5" width="9" height="9" fill="none" stroke="currentColor" stroke-width="1"/></svg>
+    </button>
+    <button type="button" class="titlebar-btn close" title="Close" aria-label="Close" onclick="window.__TAURI__.core.invoke('settings_window_action', { action: 'close' })">
+      <svg width="10" height="10" viewBox="0 0 10 10"><path d="M 0.5,0.5 L 9.5,9.5 M 9.5,0.5 L 0.5,9.5" stroke="currentColor" stroke-width="1"/></svg>
+    </button>
   </div>
 </div>
+<div class="app">
+  <nav class="sidebar" data-tauri-drag-region>
+    <div class="brandlock" data-tauri-drag-region>
+      <div class="brandname" data-tauri-drag-region>Studio</div>
+    </div>
+
+    <div class="menu-group-title">Overview</div>
+    <button class="menu-item active" data-page="stats">Stats</button>
+
+    <div class="menu-group-title">General</div>
+    <button class="menu-item" data-page="general">General</button>
+
+    <div class="menu-group-title">Focus & Wellbeing</div>
+    <button class="menu-item" data-page="schedule">Break Rules</button>
+    <button class="menu-item" data-page="pause">Smart Pause</button>
+    <button class="menu-item" data-page="wellness">Wellness Reminders</button>
+
+    <div class="menu-group-title">Personalize</div>
+    <button class="menu-item" data-page="appearance">Appearance</button>
+    <button class="menu-item" data-page="sound">Sound Effects</button>
+
+    <div class="menu-group-title">GazeOff</div>
+    <button class="menu-item" data-page="about">About</button>
+  </nav>
+
+  <main class="main">
+    <div class="topbar" data-tauri-drag-region>
+      <div class="title" id="pageTitle" data-tauri-drag-region>Stats</div>
+    </div>
+
+    <div class="content">
+
+      <!-- STATS -->
+      <section class="page active-page" id="stats">
+        <div class="group-title">Today</div>
+        <div class="score-card">
+          <div class="score-ring">
+            <svg viewBox="0 0 120 120">
+              <circle class="bg" cx="60" cy="60" r="52"></circle>
+              <circle class="fg" id="scoreRing" cx="60" cy="60" r="52"></circle>
+            </svg>
+            <div class="score-num" id="scoreNum">--</div>
+          </div>
+          <div class="score-copy">
+            <div class="score-head">Eye recovery</div>
+            <div class="score-msg" id="scoreMsg">Gathering today's data</div>
+            <div class="score-sub" id="scoreSub"></div>
+          </div>
+        </div>
+        <div class="stat-grid">
+          <div class="stat-tile"><div class="stat-val" id="statScreen">--</div><div class="stat-lab">Screen time</div></div>
+          <div class="stat-tile"><div class="stat-val" id="statBreaks">--</div><div class="stat-lab">Breaks taken</div></div>
+          <div class="stat-tile"><div class="stat-val" id="statBreakTime">--</div><div class="stat-lab">Time rested</div></div>
+          <div class="stat-tile"><div class="stat-val" id="statStreak">--</div><div class="stat-lab">Day streak</div></div>
+        </div>
+        <div class="group-title">Last 7 days</div>
+        <div class="bars" id="bars"></div>
+      </section>
+
+      <!-- GENERAL -->
+      <section class="page" id="general">
+        <div class="group-title">Startup</div>
+        <label class="row" style="cursor:pointer;">
+          <div class="label">Launch at login</div>
+          <div class="switch"><input type="checkbox" id="autostart"><div class="knob"></div></div>
+        </label>
+        <label class="row" style="cursor:pointer;">
+          <div class="label">Start timer automatically on launch</div>
+          <div class="switch"><input type="checkbox" id="start_timer_on_launch"><div class="knob"></div></div>
+        </label>
+
+        <div class="group-title" style="margin-top: 32px;">Schedule</div>
+        <div class="row">
+          <div class="label" style="display:flex;align-items:center;">
+            Show breaks after
+            <div class="tooltip-icon">?
+              <div class="tooltip-content">
+                <strong>The 20-20-20 Rule</strong>
+                Ophthalmologists recommend looking away every 20 minutes for at least 20 seconds to prevent digital eye strain and restore natural blink rates.
+              </div>
+            </div>
+          </div>
+          <div class="slider-group">
+            <input type="range" id="interval_secs_slider" min="60" max="7200" step="60">
+            <div class="time-inputs">
+              <input type="number" id="interval_secs">
+              <select class="time-unit" id="interval_secs_unit">
+                <option value="60">min</option>
+                <option value="1">sec</option>
+              </select>
+            </div>
+          </div>
+        </div>
+        <div class="row">
+          <div class="label" style="display:flex;align-items:center;">
+            Break duration
+            <div class="tooltip-icon">?
+              <div class="tooltip-content">
+                <strong>Eye Recovery</strong>
+                It takes approximately 20 seconds for your eyes to fully relax their focusing muscles when shifting from near to far distance.
+              </div>
+            </div>
+          </div>
+          <div class="slider-group">
+            <input type="range" id="short_secs_slider" min="5" max="300" step="5">
+            <div class="time-inputs">
+              <input type="number" id="short_secs">
+              <select class="time-unit" id="short_secs_unit">
+                <option value="60">min</option>
+                <option value="1">sec</option>
+              </select>
+            </div>
+          </div>
+        </div>
+        <label class="row" style="cursor:pointer;">
+          <div class="label" style="display:flex;align-items:center;">
+            Pre-break reminder
+            <div class="tooltip-icon">?
+              <div class="tooltip-content">
+                <strong>Gentle Transition</strong>
+                Provides a small countdown near your cursor so you aren't caught off guard when a break starts.
+              </div>
+            </div>
+          </div>
+          <div class="switch"><input type="checkbox" id="prebreak"><div class="knob"></div></div>
+        </label>
+        <div class="row" id="lead_secs_row">
+          <div class="label">Lead time</div>
+          <div class="slider-group">
+            <input type="range" id="lead_secs" min="3" max="60" step="1">
+            <div class="time-inputs" style="padding-right:0;">
+              <input type="number" id="lead_secs_num" min="3" max="600">
+              <span class="muted" style="padding: 0 8px 0 4px; font-size:12px; color:var(--c-ink-soft);">sec</span>
+            </div>
+          </div>
+        </div>
+        <div class="row">
+          <div class="label">Long breaks</div>
+          <div style="display:flex;align-items:center;gap:12px;">
+            <div class="time-inputs">
+              <input type="number" id="long_secs">
+              <select class="time-unit" id="long_secs_unit">
+                <option value="60">min</option>
+                <option value="1">sec</option>
+              </select>
+            </div>
+            <span class="muted">after every</span>
+            <input type="number" id="long_every" min="1" style="width:40px; border-bottom:1px solid var(--c-rule); text-align:center;">
+            <span class="muted">breaks</span>
+          </div>
+        </div>
+      </section>
+
+      <!-- BREAK RULES -->
+      <section class="page" id="schedule">
+        <div class="group-title">Break Skip Difficulty</div>
+        <div class="mode-grid">
+          <div class="mode" data-mode="lenient">
+            <div class="mode-title">Chill</div>
+            <div class="mode-sub">Relaxed pacing. Skip breaks whenever you need to.</div>
+          </div>
+          <div class="mode" data-mode="smart">
+            <div class="mode-title">Smart</div>
+            <div class="mode-sub">Retries sooner after each skip, then requires a real break after repeated skips.</div>
+          </div>
+          <div class="mode" data-mode="focused">
+            <div class="mode-title">Locked In</div>
+            <div class="mode-sub">Strict enforcement. Breaks cannot be skipped, forcing you to rest.</div>
+          </div>
+        </div>
+
+        <div class="group-title">More</div>
+        <label class="row" style="cursor:pointer;">
+          <div class="label">
+            Use a black background for breaks
+            <div class="hint">Keeps the break timer and controls visible on a plain black screen.</div>
+          </div>
+          <div class="switch"><input type="checkbox" id="display_off_break"><div class="knob"></div></div>
+        </label>
+      </section>
+
+      <!-- SMART PAUSE -->
+      <section class="page" id="pause">
+        <div class="group-title">Smart Pause</div>
+        <label class="row" style="cursor:pointer;">
+          <div class="label">Delay while typing or dragging <span class="hint">(not recommended)</span></div>
+          <div class="switch"><input type="checkbox" id="pause_typing_dragging"><div class="knob"></div></div>
+        </label>
+        <label class="row" style="cursor:pointer;">
+          <div class="label">Smart pause sound</div>
+          <div class="switch"><input type="checkbox" id="sound_smart_pause"><div class="knob"></div></div>
+        </label>
+        <label class="row" style="cursor:pointer;">
+          <div class="label">Pause during active meetings</div>
+          <div class="switch"><input type="checkbox" id="smart_meeting"><div class="knob"></div></div>
+        </label>
+        <label class="row" style="cursor:pointer;">
+          <div class="label">Pause during video playback</div>
+          <div class="switch"><input type="checkbox" id="smart_video"><div class="knob"></div></div>
+        </label>
+        <label class="row" style="cursor:pointer;">
+          <div class="label">Pause while gaming</div>
+          <div class="switch"><input type="checkbox" id="smart_gaming"><div class="knob"></div></div>
+        </label>
+
+        <div class="group-title" style="margin-top: 32px;">Idle Time Detection</div>
+        <div class="row">
+          <div class="label">Pause timer when away for</div>
+          <select id="idle_pause">
+            <option value="60">1 min</option>
+            <option value="120">2 min</option>
+            <option value="300">5 min</option>
+          </select>
+        </div>
+        <div class="row">
+          <div class="label">Reset break interval when away for</div>
+          <select id="idle_reset">
+            <option value="180">3 min</option>
+            <option value="300">5 min</option>
+            <option value="600">10 min</option>
+          </select>
+        </div>
+        <label class="row" style="cursor:pointer;">
+          <div class="label">Sound when returning after idle</div>
+          <div class="switch"><input type="checkbox" id="sound_active_after_idle"><div class="knob"></div></div>
+        </label>
+      </section>
+
+      <!-- WELLNESS REMINDERS -->
+      <section class="page" id="wellness">
+        <div class="group-title">Wellness Reminders</div>
+        <label class="row" style="cursor:pointer;">
+          <div class="label">
+            <div style="display:flex;align-items:center;">
+              Posture Reminder
+              <div class="tooltip-icon">?
+                <div class="tooltip-content">
+                  <strong>Spinal Health</strong>
+                  Prolonged forward-head posture adds up to 30 lbs of strain on the cervical spine. Checking posture every 15-30 minutes mitigates tension headaches and neck pain.
+                </div>
+              </div>
+            </div>
+            <div class="hint">Helps maintain good posture by gently alerting you to sit upright.</div>
+          </div>
+          <div class="switch"><input type="checkbox" id="posture"><div class="knob"></div></div>
+        </label>
+        <div class="row">
+          <div class="label">Show Every</div>
+          <div class="slider-group">
+            <input type="range" id="posture_secs_slider" min="60" max="7200" step="60">
+            <div class="time-inputs">
+              <input type="number" id="posture_secs">
+              <select class="time-unit" id="posture_secs_unit">
+                <option value="60">min</option>
+                <option value="1">sec</option>
+              </select>
+            </div>
+          </div>
+        </div>
+        <label class="row" style="cursor:pointer;">
+          <div class="label">Posture reminder sound</div>
+          <div class="switch"><input type="checkbox" id="sound_posture"><div class="knob"></div></div>
+        </label>
+
+        <label class="row" style="cursor:pointer; margin-top:24px;">
+          <div class="label">
+            <div style="display:flex;align-items:center;">
+              Blink Reminder
+              <div class="tooltip-icon">?
+                <div class="tooltip-content">
+                  <strong>Tear Film Stability</strong>
+                  Normal blink rates are 15-20 times per minute, but this drops by 66% when looking at screens, causing dry eye syndrome. Frequent blink prompts restore hydration.
+                </div>
+              </div>
+            </div>
+            <div class="hint">Prevents dry eyes by gently nudging you to blink at healthy intervals.</div>
+          </div>
+          <div class="switch"><input type="checkbox" id="blink"><div class="knob"></div></div>
+        </label>
+        <div class="row">
+          <div class="label">Show Every</div>
+          <div class="slider-group">
+            <input type="range" id="blink_secs_slider" min="60" max="3600" step="60">
+            <div class="time-inputs">
+              <input type="number" id="blink_secs">
+              <select class="time-unit" id="blink_secs_unit">
+                <option value="60">min</option>
+                <option value="1">sec</option>
+              </select>
+            </div>
+          </div>
+        </div>
+        <label class="row" style="cursor:pointer;">
+          <div class="label">Blink reminder sound</div>
+          <div class="switch"><input type="checkbox" id="sound_blink"><div class="knob"></div></div>
+        </label>
+
+        <div class="group-title" style="margin-top: 32px;">Preview placement</div>
+        <div class="row">
+          <div class="label">
+            Reminder position
+            <div class="hint">Choose where blink and posture reminders appear, then preview the exact placement.</div>
+          </div>
+          <select id="alert_position">
+            <option value="top_left">Top Left</option>
+            <option value="top_center">Top Center</option>
+            <option value="top_right">Top Right</option>
+            <option value="left_center">Left Center</option>
+            <option value="center">Exact Center</option>
+            <option value="right_center">Right Center</option>
+            <option value="bottom_left">Bottom Left</option>
+            <option value="bottom_center">Bottom Center</option>
+            <option value="bottom_right">Bottom Right</option>
+            <option value="cursor">Near Cursor</option>
+          </select>
+        </div>
+        <div class="row">
+          <div class="label">Show live example</div>
+          <div style="display:flex;gap:8px;align-items:center;">
+            <button class="preview-btn" id="preview_posture" type="button">Posture</button>
+            <button class="preview-btn" id="preview_blink" type="button">Blink</button>
+          </div>
+        </div>
+
+        <div class="group-title" style="margin-top: 32px;">Common settings</div>
+        <label class="row" style="cursor:pointer;">
+          <div class="label">
+            Show reminder labels
+            <div class="hint">Displays “Blink” and “Fix posture” beneath their animations.</div>
+          </div>
+          <div class="switch"><input type="checkbox" id="show_reminder_text"><div class="knob"></div></div>
+        </label>
+        <label class="row" style="cursor:pointer;">
+          <div class="label">Dim the screen when showing reminders</div>
+          <div class="switch"><input type="checkbox" id="dim_reminders"><div class="knob"></div></div>
+        </label>
+        <label class="row" style="cursor:pointer;">
+          <div class="label">Show reminders during pauses (meetings, videos, etc)</div>
+          <div class="switch"><input type="checkbox" id="reminders_during_pauses"><div class="knob"></div></div>
+        </label>
+        <label class="row" style="cursor:pointer;">
+          <div class="label">Reset timers after break</div>
+          <div class="switch"><input type="checkbox" id="reset_timers_after_break"><div class="knob"></div></div>
+        </label>
+        <label class="row" style="cursor:pointer;">
+          <div class="label">
+            Overtime nudge sound
+            <div class="hint">Plays when you skipped a break and have gone too long without recovering.</div>
+          </div>
+          <div class="switch"><input type="checkbox" id="sound_overtime_nudge"><div class="knob"></div></div>
+        </label>
+        <div class="row">
+          <div class="label">Reminder volume</div>
+          <div class="slider-group">
+            <input type="range" id="volume_reminders" min="0" max="100" step="5">
+            <div class="time-inputs" style="padding-right:0;">
+              <input type="number" id="volume_reminders_num" min="0" max="100">
+              <span class="muted" style="padding: 0 8px 0 4px; font-size:12px; color:var(--c-ink-soft);">%</span>
+            </div>
+          </div>
+        </div>
+        <div class="row">
+          <div class="label">Nudge volume</div>
+          <div class="slider-group">
+            <input type="range" id="volume_nudges" min="0" max="100" step="5">
+            <div class="time-inputs" style="padding-right:0;">
+              <input type="number" id="volume_nudges_num" min="0" max="100">
+              <span class="muted" style="padding: 0 8px 0 4px; font-size:12px; color:var(--c-ink-soft);">%</span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- APPEARANCE -->
+      <section class="page" id="appearance">
+        <div class="group-title">Break Screen</div>
+        <div class="row">
+          <div class="label">
+            Background
+            <div class="hint">Choose what the break overlay uses behind the timer and messages.</div>
+          </div>
+          <select id="bg_mode" data-native-hidden="true">
+            <option value="gradient">Time-based sky</option>
+            <option value="wallpaper">Wallpaper blur</option>
+          </select>
+          <div class="bg-choice-grid">
+            <button class="bg-choice" type="button" data-bg-mode="wallpaper">
+              <div class="bg-thumb wallpaper">
+                <div class="wallpaper-preview-img"></div>
+              </div>
+              <div class="bg-name">Wallpaper blur</div>
+              <div class="bg-sub">Use your desktop</div>
+            </button>
+            <button class="bg-choice" type="button" data-bg-mode="gradient">
+              <div class="bg-thumb sky">
+                <div class="sky-catalog">
+                  <div class="sky-chip dawn"></div>
+                  <div class="sky-chip day"></div>
+                  <div class="sky-chip dusk"></div>
+                  <div class="sky-chip night"></div>
+                </div>
+              </div>
+              <div class="bg-name">Time-based sky</div>
+              <div class="bg-sub">Changes by hour</div>
+            </button>
+          </div>
+        </div>
+        <label class="row" style="cursor:pointer;">
+          <div class="label">Blur wallpaper background</div>
+          <div class="switch"><input type="checkbox" id="bg_blur"><div class="knob"></div></div>
+        </label>
+        <div class="row" id="blur_amount_row">
+          <div class="label">Blur strength</div>
+          <div class="slider-group">
+            <input type="range" id="bg_blur_amount" min="0" max="48" step="2">
+            <div class="time-inputs" style="padding-right:0;">
+              <input type="number" id="bg_blur_amount_num" min="0" max="48">
+              <span class="muted" style="padding: 0 8px 0 4px; font-size:12px; color:var(--c-ink-soft);">px</span>
+            </div>
+          </div>
+        </div>
+        <div class="group-title" style="margin-top: 32px;">Appearance</div>
+        <div class="row">
+          <div class="label">App Theme</div>
+          <select id="app_theme">
+            <option value="dark">Acrylic Dark</option>
+            <option value="light">Acrylic Light</option>
+          </select>
+        </div>
+
+        <div class="group-title" style="margin-top: 32px;">Messages</div>
+        <label class="row" style="cursor:pointer;">
+          <div class="label">Hide all break screen messages</div>
+          <div class="switch"><input type="checkbox" id="hide_messages"><div class="knob"></div></div>
+        </label>
+
+      </section>
+
+      <!-- SOUND EFFECTS -->
+      <section class="page" id="sound">
+        <div class="group-title">Break Sounds</div>
+        <div class="row">
+          <div class="label">Sound pair</div>
+          <select id="sound_pair">
+            <option value="original">Original</option>
+            <option value="bell">Bell</option>
+            <option value="bubbles">Bubbles</option>
+            <option value="flute">Flute</option>
+            <option value="harp">Harp</option>
+            <option value="piano">Piano</option>
+            <option value="twinkle">Twinkle</option>
+            <option value="whoosh">Whoosh</option>
+          </select>
+        </div>
+        <label class="row" style="cursor:pointer;">
+          <div class="label">Play on break start</div>
+          <div class="switch"><input type="checkbox" id="sound_break_start"><div class="knob"></div></div>
+        </label>
+        <label class="row" style="cursor:pointer;">
+          <div class="label">Play on break end</div>
+          <div class="switch"><input type="checkbox" id="sound"><div class="knob"></div></div>
+        </label>
+        <div class="row">
+          <div class="label">Volume</div>
+          <div class="slider-group">
+            <input type="range" id="volume_break" min="0" max="100" step="5">
+            <div class="time-inputs" style="padding-right:0;">
+              <input type="number" id="volume_break_num" min="0" max="100">
+              <span class="muted" style="padding: 0 8px 0 4px; font-size:12px; color:var(--c-ink-soft);">%</span>
+            </div>
+          </div>
+        </div>
+
+      </section>
+
+      <!-- ABOUT -->
+      <section class="page" id="about">
+        <div class="group-title">About</div>
+        <div class="row">
+          <div class="label">gazeOff<br><span class="hint">A Windows-first eye-care companion.</span></div>
+          <div class="muted">0.1.0</div>
+        </div>
+        <div class="row">
+          <div class="label">
+            Reset settings
+            <div class="hint">Restore the recommended defaults without clearing today’s activity.</div>
+          </div>
+          <button class="preview-btn" id="reset_settings" type="button">Reset</button>
+        </div>
+        <div class="group-title" style="margin-top: 32px;">Test surfaces</div>
+        <div class="row">
+          <div class="label">
+            Cursor heads-up
+            <div class="hint">Runs the live 5 second cursor countdown, then opens a real break.</div>
+          </div>
+          <button class="preview-btn" id="test_prebreak_cursor" type="button">Test</button>
+        </div>
+        <div class="row">
+          <div class="label">
+            Overtime nudge
+            <div class="hint">Shows the skipped-break nudge without waiting 30 minutes.</div>
+          </div>
+          <button class="preview-btn" id="test_debt_nudge" type="button">Test</button>
+        </div>
+        <div class="row">
+          <div class="label">
+            AFK return prompt
+            <div class="hint">Shows the took-a-break or still-staring prompt.</div>
+          </div>
+          <button class="preview-btn" id="test_afk_prompt" type="button">Test</button>
+        </div>
+        <div class="row">
+          <div class="label">
+            Break overlay
+            <div class="hint">Starts a real break now so you can test skip, delay, and screen darkening.</div>
+          </div>
+          <button class="preview-btn" id="test_break_overlay" type="button">Start</button>
+        </div>
+      </section>
+
+    </div>
+  </main>
+</div>
+
 <script>
 const { invoke } = window.__TAURI__.core;
 const W = window.__TAURI__.window.getCurrentWindow();
-function closeWin(){ W.hide(); }
-
-const SAMPLES = {
-  calm: ['"Eyes to the horizon."','"Step back. Your screen can hold this thought."',
-    '"Blink slowly. Twice."','"You’ve earned this. Stand up, move a little."'],
-  playful: ['"Touch grass, twin. A few seconds, go."','"Unshrimp yourself."',
-    '"Your eyes are not it rn. Look far away."','"Long session detected. You’re cooked. Rest."']
-};
-let sampleIdx = 0;
-
-const hs = document.getElementById("hours_start"), he = document.getElementById("hours_end");
-for (let h = 0; h <= 24; h++) {
-  const t = h === 24 ? "midnight" : `${((h + 11) % 12) + 1} ${h < 12 ? "am" : "pm"}`;
-  if (h < 24) hs.add(new Option(h === 0 ? "always" : t, h));
-  if (h > 0) he.add(new Option(t, h));
-}
-
-// day chips: display Mon..Sun, bitmask bit 0 = Sunday
-const DAY_ORDER = [1,2,3,4,5,6,0], DAY_NAMES = ["M","T","W","T","F","S","S"];
-const daysEl = document.getElementById("days");
-DAY_ORDER.forEach((bit, i) => {
-  const d = document.createElement("div");
-  d.className = "day"; d.textContent = DAY_NAMES[i]; d.dataset.bit = bit;
-  d.onclick = () => { s.days ^= (1 << bit); show(); push(); };
-  daysEl.appendChild(d);
-});
+function closeWin() { W.hide(); }
 
 let s = null, timer = null;
 const $ = id => document.getElementById(id);
-const TOGGLES = ["force_due","playful","blink","posture","prebreak","smart_fullscreen","autostart","sound"];
-const RANGES = ["interval_min","short_secs","long_every","long_min","blink_min","posture_min"];
-const SELECTS = ["lead_secs","cooldown_secs","idle_pause","idle_reset","hours_start","hours_end"];
+
+const TOGGLES = [
+  "autostart", "start_timer_on_launch",
+  "pause_typing_dragging", "prebreak", "display_off_break",
+  "smart_meeting", "smart_video", "smart_gaming",
+  "posture", "blink", "show_reminder_text", "dim_reminders", "reminders_during_pauses", "reset_timers_after_break",
+  "bg_blur", "hide_messages",
+  "sound_break_start", "sound", "sound_posture", "sound_blink", "sound_smart_pause", "sound_active_after_idle", "sound_overtime_nudge"
+];
+
+const RANGES = [
+  "long_every",
+  "lead_secs",
+  "bg_blur_amount",
+  "volume_break", "volume_reminders", "volume_nudges"
+];
+
+const SELECTS = [
+  "idle_pause", "idle_reset",
+  "bg_mode", "app_theme", "alert_position", "sound_pair"
+];
+
+function showPage(page) {
+  const section = document.getElementById(page);
+  if (section) section.scrollIntoView({ behavior: 'smooth' });
+}
+
+const pages = document.querySelectorAll('.page');
+const content = document.querySelector('.content');
+
+function updateFocus() {
+  const targetY = window.innerHeight * 0.3; // 30% from top
+  let activePage = null;
+  let minDistance = Infinity;
+
+  // Find the page whose bounding box is closest to the 30% mark
+  for (const page of pages) {
+    const rect = page.getBoundingClientRect();
+    // If the 30% line is inside the page
+    if (rect.top <= targetY && rect.bottom >= targetY) {
+      activePage = page;
+      break;
+    }
+    // Fallback: shortest distance to the line
+    const distance = Math.min(Math.abs(rect.top - targetY), Math.abs(rect.bottom - targetY));
+    if (distance < minDistance) {
+      minDistance = distance;
+      activePage = page;
+    }
+  }
+
+  if (activePage) {
+    pages.forEach(p => p.classList.toggle('active-page', p === activePage));
+    document.querySelectorAll(".menu-item").forEach(n => {
+      const active = n.dataset.page === activePage.id;
+      n.classList.toggle("active", active);
+      if (active) $("pageTitle").textContent = n.textContent;
+    });
+  }
+}
+
+content.addEventListener('scroll', () => requestAnimationFrame(updateFocus));
+// Call once on load
+requestAnimationFrame(updateFocus);
+
+
+
+
+const TIME_VARS = ["interval_secs", "short_secs", "long_secs", "posture_secs", "blink_secs"];
+let wallpaperPreviewLoaded = false;
+
+async function loadWallpaperPreview() {
+  if (wallpaperPreviewLoaded) return;
+  wallpaperPreviewLoaded = true;
+  try {
+    const url = await invoke("wallpaper_data_url");
+    if (!url) return;
+    document.querySelectorAll(".wallpaper-preview-img").forEach(el => {
+      el.style.backgroundImage = `url("${url}")`;
+    });
+  } catch (e) {}
+}
+
+function refreshCustomSelects() {
+  document.querySelectorAll('select').forEach(sel => {
+    const wrap = document.getElementById(sel.id + '-wrapper');
+    if (!wrap) return;
+    const opt = sel.options[sel.selectedIndex];
+    const text = wrap.querySelector('.select-trigger span');
+    if (text) text.textContent = opt ? opt.text : '';
+    wrap.querySelectorAll('.select-item').forEach(c => c.classList.toggle('selected', c.dataset.value === sel.value));
+  });
+  document.querySelectorAll('.bg-choice').forEach(btn => {
+    btn.classList.toggle('sel', !!s && btn.dataset.bgMode === s.bg_mode);
+  });
+  const blurActive = !!s && s.bg_blur;
+  const blurRow = $('blur_amount_row');
+  if (blurRow) {
+    blurRow.style.opacity = blurActive ? '1' : '0.35';
+    blurRow.style.pointerEvents = blurActive ? 'auto' : 'none';
+  }
+  document.querySelectorAll('.wallpaper-preview-img').forEach(el => {
+    el.style.setProperty('--preview-blur', blurActive ? `${s.bg_blur_amount || 0}px` : '0px');
+  });
+}
 
 function show() {
-  document.querySelectorAll(".mode").forEach(m =>
-    m.classList.toggle("sel", m.dataset.mode === s.mode));
-  $("forceRow").style.display = s.mode === "smart" ? "flex" : "none";
-  for (const k of TOGGLES) $(k).checked = s[k];
-  for (const k of RANGES) $(k).value = s[k];
-  for (const k of SELECTS) $(k).value = s[k];
-  document.querySelectorAll(".day").forEach(d =>
-    d.classList.toggle("on", (s.days >> +d.dataset.bit & 1) === 1));
-  const deck = SAMPLES[s.playful ? "playful" : "calm"];
-  $("sample").textContent = deck[sampleIdx % deck.length];
-  $("v_interval").textContent = s.interval_min + " min";
-  $("v_short").textContent = s.short_secs + " s";
-  $("v_every").textContent = s.long_every + " breaks";
-  $("v_long").textContent = s.long_min + " min";
-  $("v_blink").textContent = s.blink_min + " min";
-  $("v_post").textContent = s.posture_min + " min";
+  if (!s) return;
+  document.querySelectorAll(".mode").forEach(m => m.classList.toggle("sel", m.dataset.mode === s.mode));
+
+  for (const k of TOGGLES) if ($(k)) $(k).checked = s[k];
+  for (const k of RANGES) if ($(k)) { $(k).value = s[k]; if ($(k+"_num")) $(k+"_num").value = s[k]; }
+  for (const k of SELECTS) if ($(k)) $(k).value = s[k];
+  if ($("long_every")) $("long_every").value = s.long_every;
+
+  if (s.app_theme) {
+    document.documentElement.setAttribute('data-theme', s.app_theme);
+    document.querySelector('meta[name="color-scheme"]').setAttribute('content', s.app_theme);
+  }
+  // Handle Time fields
+  TIME_VARS.forEach(k => {
+    if (s[k] === undefined) return;
+    const v = s[k];
+    const unitEl = $(k + "_unit");
+    const numEl = $(k);
+    const sliderEl = $(k + "_slider");
+
+    // Choose unit based on value (if divisible by 60, use minutes, else seconds)
+    if (!unitEl.dataset.userEdited) {
+       unitEl.value = (v % 60 === 0 && v >= 60) ? "60" : "1";
+    }
+
+    const mult = +unitEl.value;
+    numEl.value = +(v / mult).toFixed(1);
+
+    if (sliderEl) {
+      sliderEl.value = v;
+      // adjust slider max/step if in seconds mode so it's smooth
+      if (mult === 1) {
+        sliderEl.step = 5;
+      } else {
+        sliderEl.step = 60;
+      }
+    }
+  });
+  refreshCustomSelects();
+  loadWallpaperPreview();
 }
 
 function push() {
   clearTimeout(timer);
-  timer = setTimeout(() => invoke("set_settings", { s }), 250);
+  timer = setTimeout(() => invoke("set_settings", { s }), 180);
 }
 
 function wire() {
-  document.querySelectorAll(".mode").forEach(m => m.onclick = () => {
-    s.mode = m.dataset.mode; show(); push(); });
-  for (const k of TOGGLES) $(k).onchange = () => { s[k] = $(k).checked; show(); push(); };
-  for (const k of RANGES) $(k).oninput = () => { s[k] = +$(k).value; show(); push(); };
-  for (const k of SELECTS) $(k).onchange = () => { s[k] = +$(k).value; push(); };
-  $("sample").onclick = () => { sampleIdx++; show(); };
+  document.querySelectorAll(".menu-item").forEach(n => n.onclick = () => showPage(n.dataset.page));
+  document.querySelectorAll(".mode").forEach(m => m.onclick = () => { s.mode = m.dataset.mode; show(); push(); });
+
+  for (const k of TOGGLES) if ($(k)) $(k).onchange = () => { s[k] = $(k).checked; show(); push(); };
+  for (const k of RANGES) if ($(k)) {
+    $(k).oninput = () => { s[k] = +$(k).value; if ($(k+"_num")) $(k+"_num").value = s[k]; refreshCustomSelects(); push(); };
+    if ($(k+"_num")) {
+      $(k+"_num").oninput = () => { s[k] = +$(k+"_num").value; $(k).value = s[k]; refreshCustomSelects(); push(); };
+    }
+  }
+  for (const k of SELECTS) if ($(k)) $(k).onchange = () => {
+    const v = $(k).value; s[k] = isNaN(v) ? v : +v; push();
+  };
+  document.querySelectorAll('.bg-choice').forEach(btn => {
+    btn.onclick = () => {
+      s.bg_mode = btn.dataset.bgMode;
+      if ($('bg_mode')) $('bg_mode').value = s.bg_mode;
+      if (s.bg_mode === 'wallpaper') loadWallpaperPreview();
+      show();
+      push();
+    };
+  });
+
+  // Live Nudge Previews
+  $('alert_position').addEventListener('change', () => {
+    setTimeout(() => invoke('test_nudge', { kind: 'blink' }), 250);
+    setTimeout(() => invoke('test_nudge', { kind: 'posture' }), 1250);
+  });
+  $('blink').addEventListener('change', e => { if (e.target.checked) setTimeout(() => invoke('test_nudge', { kind: 'blink' }), 250); });
+  $('posture').addEventListener('change', e => { if (e.target.checked) setTimeout(() => invoke('test_nudge', { kind: 'posture' }), 250); });
+  $('prebreak').addEventListener('change', e => { if (e.target.checked) setTimeout(() => invoke('test_nudge', { kind: 'test_prebreak' }), 250); });
+  $('preview_blink').onclick = e => { e.preventDefault(); e.stopPropagation(); invoke('test_nudge', { kind: 'blink' }); };
+  $('preview_posture').onclick = e => { e.preventDefault(); e.stopPropagation(); invoke('test_nudge', { kind: 'posture' }); };
+  $('test_prebreak_cursor').onclick = e => { e.preventDefault(); e.stopPropagation(); invoke('test_prebreak_sequence'); };
+  $('test_debt_nudge').onclick = e => { e.preventDefault(); e.stopPropagation(); invoke('test_nudge', { kind: 'debt' }); };
+  $('test_afk_prompt').onclick = e => { e.preventDefault(); e.stopPropagation(); invoke('test_afk_prompt'); };
+  $('test_break_overlay').onclick = e => { e.preventDefault(); e.stopPropagation(); invoke('break_now'); };
+  $('reset_settings').onclick = async e => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (!confirm('Reset all settings to the recommended defaults?')) return;
+    s = await invoke('reset_settings');
+    show();
+  };
+
+  if ($("long_every")) $("long_every").oninput = () => { s.long_every = +$("long_every").value; push(); };
+
+  TIME_VARS.forEach(k => {
+    const unitEl = $(k + "_unit");
+    const numEl = $(k);
+    const sliderEl = $(k + "_slider");
+
+    if (unitEl && numEl) {
+      unitEl.onchange = () => {
+        unitEl.dataset.userEdited = "true";
+        s[k] = Math.round(+numEl.value * +unitEl.value);
+        show(); push();
+      };
+      numEl.oninput = () => {
+        s[k] = Math.round(+numEl.value * +unitEl.value);
+        if (sliderEl) sliderEl.value = s[k];
+        push();
+      };
+    }
+    if (sliderEl) {
+      sliderEl.oninput = () => {
+        s[k] = +sliderEl.value;
+        show(); push();
+      };
+    }
+  });
 }
 
+function upgradeSelects() {
+  document.querySelectorAll('select').forEach(sel => {
+    if (sel.dataset.nativeHidden === 'true') {
+      sel.style.display = 'none';
+      return;
+    }
+    if (sel.nextElementSibling && sel.nextElementSibling.classList.contains('custom-select')) return;
+    const wrap = document.createElement('div');
+    wrap.className = 'custom-select ' + (sel.className.includes('time-unit') ? 'time-unit-wrapper' : '');
+    wrap.id = sel.id + '-wrapper';
+    sel.parentNode.insertBefore(wrap, sel);
+    sel.style.display = 'none';
+
+    const trigger = document.createElement('div');
+    trigger.className = 'select-trigger';
+    const valText = document.createElement('span');
+    trigger.appendChild(valText);
+    const arrow = document.createElement('div');
+    arrow.className = 'select-arrow';
+    trigger.appendChild(arrow);
+    wrap.appendChild(trigger);
+
+    const menu = document.createElement('div');
+    menu.className = 'select-menu';
+    wrap.appendChild(menu);
+
+    const sync = () => {
+      const opt = sel.options[sel.selectedIndex];
+      valText.textContent = opt ? opt.text : '';
+      Array.from(menu.children).forEach(c => c.classList.toggle('selected', c.dataset.value === sel.value));
+    };
+
+    Array.from(sel.options).forEach(opt => {
+      const item = document.createElement('div');
+      item.className = 'select-item';
+      item.dataset.value = opt.value;
+      item.textContent = opt.text;
+      item.onclick = (e) => {
+        e.stopPropagation();
+        sel.value = opt.value;
+        sel.dispatchEvent(new Event('change'));
+        wrap.classList.remove('open');
+        sync();
+      };
+      menu.appendChild(item);
+    });
+
+    trigger.onclick = (e) => {
+      e.stopPropagation();
+      const isOpen = wrap.classList.contains('open');
+      document.querySelectorAll('.custom-select').forEach(s => s.classList.remove('open'));
+      if (!isOpen) wrap.classList.add('open');
+    };
+
+    sel.addEventListener('change', sync);
+    sync();
+  });
+
+  document.addEventListener('click', () => {
+    document.querySelectorAll('.custom-select').forEach(s => s.classList.remove('open'));
+  });
+}
+upgradeSelects();
+
+// ---- Stats page ----
+const RING_CIRC = 2 * Math.PI * 52;
+function fmtDur(secs){
+  secs = Math.max(0, Math.round(secs || 0));
+  const h = Math.floor(secs / 3600), m = Math.round((secs % 3600) / 60);
+  if (h > 0) return `${h}h ${m}m`;
+  if (secs >= 60) return `${m}m`;
+  return `${secs}s`;
+}
+function scoreColor(v){ return v >= 90 ? '#4ade80' : v >= 60 ? '#fbbf24' : '#ef4444'; }
+function scoreMessage(v){
+  return v >= 90 ? 'Eyes are in good shape'
+       : v >= 60 ? 'Your eyes could use more rest'
+       : 'Your eyes are strained today';
+}
+function greeting(){
+  const h = new Date().getHours();
+  return h < 12 ? 'Good morning' : h < 17 ? 'Good afternoon' : h < 21 ? 'Good evening' : 'Late night session';
+}
+function weekday(dateStr){
+  if (!dateStr) return '';
+  const d = new Date(dateStr + 'T00:00:00');
+  return isNaN(d) ? '' : ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'][d.getDay()];
+}
+function adherenceClass(d){
+  const total = (d.taken || 0) + (d.skipped || 0);
+  if (!total) return '';
+  const a = (d.taken || 0) / total;
+  return a >= 0.8 ? 'good' : a >= 0.5 ? 'mid' : 'bad';
+}
+async function loadStats(){
+  let st;
+  try { st = await invoke('get_stats'); } catch(e){ return; }
+  const score = Math.round(st.score || 0);
+  const ring = $('scoreRing');
+  ring.style.strokeDasharray = `${(RING_CIRC * score / 100).toFixed(1)} ${RING_CIRC.toFixed(1)}`;
+  ring.style.stroke = scoreColor(score);
+  $('scoreNum').textContent = score;
+  $('scoreNum').style.color = scoreColor(score);
+  $('scoreMsg').textContent = scoreMessage(score);
+  $('scoreSub').textContent = `${greeting()}. Today's eye recovery score.`;
+  const t = st.today || {};
+  $('statScreen').textContent = fmtDur(t.screen_secs);
+  $('statBreaks').textContent = t.taken || 0;
+  $('statBreakTime').textContent = fmtDur(t.break_secs);
+  $('statStreak').textContent = st.streak || 0;
+  const days = st.days || [];
+  const maxScreen = Math.max(1, ...days.map(d => d.screen_secs || 0));
+  const bars = $('bars');
+  bars.innerHTML = '';
+  days.forEach(d => {
+    const col = document.createElement('div'); col.className = 'bar-col';
+    col.tabIndex = 0;
+    const bar = document.createElement('div'); bar.className = 'bar ' + adherenceClass(d);
+    bar.style.height = `${Math.max(3, (d.screen_secs || 0) / maxScreen * 100)}%`;
+    const total = (d.taken || 0) + (d.skipped || 0);
+    const ratio = total ? (d.taken || 0) / total : 0;
+    const rhythm = !total ? 'No break data' : ratio >= 0.8 ? 'Kept a good rhythm' : ratio >= 0.5 ? 'Some breaks slipped' : 'Most breaks skipped';
+    const summary = `${weekday(d.date)} · ${fmtDur(d.screen_secs)} screen · ${d.taken || 0} taken · ${d.skipped || 0} skipped · ${rhythm}`;
+    col.setAttribute('aria-label', summary);
+    const tip = document.createElement('div'); tip.className = 'bar-tooltip';
+    const tipMain = document.createElement('strong'); tipMain.textContent = `${weekday(d.date)} · ${fmtDur(d.screen_secs)} screen`;
+    const tipCounts = document.createElement('span'); tipCounts.textContent = `${d.taken || 0} taken · ${d.skipped || 0} skipped`;
+    const tipRhythm = document.createElement('span'); tipRhythm.textContent = rhythm;
+    tip.appendChild(tipMain); tip.appendChild(tipCounts); tip.appendChild(tipRhythm);
+    const lab = document.createElement('div'); lab.className = 'bar-day'; lab.textContent = weekday(d.date);
+    col.appendChild(tip); col.appendChild(bar); col.appendChild(lab); bars.appendChild(col);
+  });
+}
+// Refresh when the Stats tab is opened, and live while it is the visible page.
+document.querySelectorAll('.menu-item').forEach(n =>
+  n.addEventListener('click', () => { if (n.dataset.page === 'stats') loadStats(); })
+);
+try {
+  window.__TAURI__.event.listen('snap', () => {
+    if ($('stats').classList.contains('active-page')) loadStats();
+  });
+} catch(e) {}
+
+window.__refreshSettings = () => invoke("get_settings").then(v => { s = v; show(); });
 invoke("get_settings").then(v => { s = v; show(); wire(); });
+loadStats();
 addEventListener("contextmenu", e => e.preventDefault());
 </script>
-</body></html>
+</body>
+</html>

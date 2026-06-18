@@ -1,155 +1,329 @@
 <!doctype html>
-<html><head><meta charset="utf-8"><style>
-  * { margin:0; padding:0; box-sizing:border-box; user-select:none; }
-  html,body { width:100%; height:100%; background:transparent; overflow:hidden;
-    font-family:'Segoe UI Variable Text','Segoe UI',sans-serif; color:#e9e5de;
-    --acc:#9eb6a8; --accSoft:rgba(158,182,168,.22); }
-  .card { position:fixed; inset:8px; border-radius:22px; padding:20px 20px 18px;
-    border:1px solid rgba(255,255,255,.09);
-    background:linear-gradient(160deg, rgba(32,30,28,.92), rgba(20,19,17,.84));
-    box-shadow:0 16px 56px rgba(0,0,0,.5), inset 0 1px 0 rgba(255,255,255,.06);
-    display:flex; flex-direction:column; overflow:hidden; }
-  .card::before { content:""; position:absolute; inset:0; pointer-events:none; opacity:.05;
-    mix-blend-mode:overlay;
-    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E"); }
-  .glow { position:absolute; top:-70px; left:50%; transform:translateX(-50%);
-    width:280px; height:170px; border-radius:50%; filter:blur(50px);
-    background:radial-gradient(circle, var(--accSoft), transparent 70%);
-    transition:background 2s ease; pointer-events:none; }
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="color-scheme" content="dark">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,400;0,9..144,500;0,9..144,600;0,9..144,700;1,9..144,300;1,9..144,400;1,9..144,500;1,9..144,600;1,9..144,700&family=JetBrains+Mono:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; }
 
-  .head { display:flex; align-items:center; gap:8px; z-index:1; }
-  .brand { font-family:'Segoe UI Variable Display','Segoe UI',sans-serif;
-    font-size:15px; font-weight:350; letter-spacing:.02em; color:rgba(233,229,222,.45); flex:1; }
-  .brand b { font-weight:600; color:rgba(233,229,222,.85); }
-  .chip { font-size:10px; font-weight:600; letter-spacing:.14em; text-transform:uppercase;
-    color:rgba(233,229,222,.5); border:1px solid rgba(255,255,255,.12);
-    border-radius:999px; padding:4px 10px; background:rgba(255,255,255,.04); }
+  :root {
+    --c-bg: rgba(12, 14, 18, 0.65);
+    --c-ink: #f7eedb;
+    --c-ink-soft: rgba(247, 238, 219, 0.78);
+    --c-ink-faint: rgba(247, 238, 219, 0.45);
+    --c-accent: #b6cbd9;
+    --c-rule: rgba(247, 238, 219, 0.12);
+    --c-hover: rgba(255, 255, 255, 0.08);
 
-  .hero { display:flex; align-items:center; gap:18px; margin:22px 0 6px; z-index:1; }
-  .ringwrap { position:relative; width:96px; height:96px; flex:none; }
-  .ringwrap svg { position:absolute; inset:0; transform:rotate(-90deg); }
-  .rtrack { fill:none; stroke:rgba(255,255,255,.09); stroke-width:3; }
-  .rprog { fill:none; stroke:var(--acc); stroke-width:3; stroke-linecap:round;
-    filter:drop-shadow(0 0 5px var(--accSoft));
-    transition:stroke-dashoffset 1s linear, stroke 1.5s ease; }
-  .rmid { position:absolute; inset:0; display:flex; flex-direction:column;
-    align-items:center; justify-content:center; gap:1px; }
-  .rnum { font-size:22px; font-weight:250; font-variant-numeric:tabular-nums; line-height:1; }
-  .rlab { font-size:9px; font-weight:600; letter-spacing:.16em; text-transform:uppercase;
-    color:rgba(233,229,222,.4); }
-  .hcol { flex:1; min-width:0; }
-  .word { font-size:19px; font-weight:350; display:flex; align-items:center; gap:9px; }
-  .dot { width:9px; height:9px; border-radius:50%; background:var(--acc); flex:none;
-    box-shadow:0 0 0 5px var(--accSoft); animation:pulse 4s ease-in-out infinite; }
-  @keyframes pulse { 0%,100%{transform:scale(1)} 50%{transform:scale(1.25)} }
-  .hsub { font-size:12.5px; color:rgba(233,229,222,.5); margin-top:6px; line-height:1.4; }
+    --display: 'Fraunces', Georgia, serif;
+    --mono: 'JetBrains Mono', ui-monospace, monospace;
+    --ease: cubic-bezier(.2, .6, .2, 1);
+  }
 
-  .lab { font-size:10px; font-weight:600; letter-spacing:.14em; text-transform:uppercase;
-    color:rgba(233,229,222,.35); margin:18px 2px 8px; z-index:1; }
-  .spark { display:flex; align-items:flex-end; gap:4px; height:46px; padding:8px 10px 6px;
-    border-radius:14px; background:rgba(255,255,255,.04);
-    border:1px solid rgba(255,255,255,.07); z-index:1; }
-  .spark .bar { flex:1; max-width:14px; border-radius:3px 3px 1px 1px; min-height:4px;
-    background:rgba(158,182,168,.65); }
-  .spark .bar.miss { background:rgba(201,130,112,.55); }
-  .spark .empty { font-size:11.5px; color:rgba(233,229,222,.35); align-self:center; margin:auto; }
+  :root[data-theme="light"] {
+    --c-bg: rgba(255, 255, 255, 0.55);
+    --c-ink: #111;
+    --c-ink-soft: #444;
+    --c-ink-faint: #888;
+    --c-accent: #0b57d0;
+    --c-rule: rgba(0, 0, 0, 0.1);
+    --c-hover: rgba(0, 0, 0, 0.05);
+  }
 
-  .stats { display:flex; gap:7px; margin-top:14px; z-index:1; }
-  .stat { flex:1; text-align:center; padding:11px 2px 9px; border-radius:13px;
-    background:rgba(255,255,255,.04); border:1px solid rgba(255,255,255,.07); }
-  .stat .n { font-size:19px; font-weight:300; font-variant-numeric:tabular-nums; }
-  .stat .l { font-size:9.5px; color:rgba(233,229,222,.42); margin-top:3px;
-    letter-spacing:.06em; text-transform:uppercase; }
+  /* Adjust panel border for light theme */
+  body[data-theme="light"] .panel { border-color: rgba(0, 0, 0, 0.1); }
 
-  .btns { display:flex; flex-direction:column; gap:8px; margin-top:auto; z-index:1; }
-  .split { display:flex; gap:8px; }
-  .split button { flex:1; }
-  button { font:inherit; font-size:13.5px; cursor:pointer; padding:11px;
-    border-radius:13px; border:1px solid rgba(255,255,255,.10);
-    background:rgba(255,255,255,.06); color:rgba(233,229,222,.85); text-align:center;
-    transition:background .2s, color .2s; }
-  button:hover { background:rgba(255,255,255,.13); color:#f2efe9; }
-  button.primary { background:rgba(238,234,227,.92); color:#1c1b19; border-color:transparent;
-    font-weight:500; }
-  button.primary:hover { background:#f5f2ec; color:#11100e; }
-</style></head>
-<body>
-  <div class="card">
-    <div class="glow"></div>
-    <div class="head">
-      <div class="brand">gaze<b>Off</b></div>
-      <div class="chip" id="chip"></div>
-    </div>
-    <div class="hero">
-      <div class="ringwrap">
-        <svg viewBox="0 0 96 96">
-          <circle class="rtrack" cx="48" cy="48" r="44"/>
-          <circle class="rprog" id="rprog" cx="48" cy="48" r="44"
-            stroke-dasharray="276.5" stroke-dashoffset="276.5"/>
+  body[data-state="clear"] { --c-accent: #b6cbd9; }
+  body[data-state="accumulating"] { --c-accent: #e8a874; }
+  body[data-state="due"] { --c-accent: #f19a63; }
+  body[data-paused="true"] { --c-accent: #888888; }
+
+  html, body {
+    width: 100%; height: 100%; overflow: hidden;
+    /* Darker tint over native Windows 11 glass */
+    background: var(--c-bg); color: var(--c-ink);
+    font-family: var(--display);
+    transition: background 1.2s var(--ease);
+  }
+
+  .panel {
+    position: relative;
+    display: flex; flex-direction: column;
+    height: 100%; padding: 0;
+    border-radius: 8px;
+    border: 1px solid rgba(255, 255, 255, 0.06);
+  }
+
+  .status-module {
+    position: relative;
+    padding: 24px 20px;
+    border-bottom: 1px solid var(--c-rule);
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    min-height: 140px;
+    transition: background 300ms var(--ease);
+  }
+
+  .status-module:hover { background: var(--c-hover); }
+
+  .status-default {
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    position: absolute; inset: 0;
+    transition: opacity 200ms var(--ease), transform 200ms var(--ease);
+  }
+
+  /* Health Badge Styles */
+  .health-header {
+    position: absolute; top: 16px; left: 20px;
+    display: flex; align-items: center; gap: 8px;
+    opacity: 1; transition: opacity 300ms var(--ease);
+  }
+  .health-ring {
+    width: 16px; height: 16px;
+    transform: rotate(-90deg);
+  }
+  .health-ring circle {
+    fill: none; stroke-width: 2.5;
+    stroke-linecap: round;
+    transition: stroke-dasharray 1s var(--ease), stroke 1s var(--ease);
+  }
+  .health-ring .bg { stroke: var(--c-rule); }
+  .health-ring .fg { stroke: var(--c-accent); stroke-dasharray: 0 63; }
+
+  .health-text {
+    font-family: var(--mono); font-size: 10px; font-weight: 400;
+    letter-spacing: 0.15em; text-transform: uppercase; color: var(--c-ink-faint);
+    transition: color 1s var(--ease);
+  }
+
+  .timer-container {
+    display: flex; flex-direction: column; align-items: center;
+  }
+
+  .status-time {
+    font-size: 32px; font-style: italic; font-weight: 300;
+    color: var(--c-ink); line-height: 1; font-variant-numeric: tabular-nums;
+  }
+
+  .status-kicker {
+    font-family: var(--mono); font-size: 10px; font-weight: 300;
+    letter-spacing: 0.25em; text-transform: uppercase; color: var(--c-ink-faint);
+    transition: color 400ms var(--ease);
+  }
+
+  .status-actions {
+    position: absolute; inset: 0;
+    display: flex; align-items: center; justify-content: center; gap: 8px;
+    opacity: 0; pointer-events: none; transform: translateY(8px);
+    transition: opacity 200ms var(--ease), transform 200ms var(--ease);
+    padding: 0 12px;
+  }
+
+  .status-module:hover .status-default { opacity: 0; transform: translateY(-8px); }
+  .status-module:hover .status-actions { opacity: 1; pointer-events: auto; transform: translateY(0); }
+
+  .quick-btn {
+    appearance: none; background: transparent;
+    border: 1px solid var(--c-rule); color: var(--c-ink-soft);
+    font-family: var(--mono); font-size: 10px; font-weight: 300;
+    letter-spacing: 0.15em; text-transform: uppercase;
+    padding: 10px 12px; cursor: pointer; border-radius: 4px;
+    transition: all 200ms var(--ease);
+    flex: 1; text-align: center; white-space: nowrap;
+  }
+  .quick-btn:hover {
+    background: var(--c-hover);
+    color: var(--c-ink);
+    border-color: var(--c-rule);
+  }
+
+  .menu {
+    flex: 1; display: flex; flex-direction: column;
+    padding: 12px 0;
+  }
+
+  .menu-item {
+    appearance: none; background: transparent; border: none;
+    width: 100%; text-align: left; padding: 14px 20px;
+    display: flex; justify-content: space-between; align-items: baseline;
+    cursor: pointer;
+    transition: background 200ms var(--ease), padding-left 300ms var(--ease);
+  }
+  .menu-item:hover { background: var(--c-hover); padding-left: 26px; }
+
+  .menu-title {
+    font-family: var(--display); font-size: 16px; font-weight: 400; font-style: italic;
+    color: var(--c-ink);
+  }
+
+  @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation: none !important; transition: none !important; } }
+</style>
+</head>
+<body data-state="clear">
+<div class="panel">
+
+  <div class="status-module" id="statusModule">
+    <div class="status-default" id="statusDefault">
+
+      <div class="health-header">
+        <svg class="health-ring" viewBox="0 0 24 24">
+          <circle class="bg" cx="12" cy="12" r="10"></circle>
+          <circle class="fg" id="healthRingFg" cx="12" cy="12" r="10"></circle>
         </svg>
-        <div class="rmid"><div class="rnum" id="rnum"></div><div class="rlab" id="rlab">min</div></div>
+        <div class="health-text" id="healthText">awaiting data</div>
       </div>
-      <div class="hcol">
-        <div class="word"><span class="dot"></span><span id="word"></span></div>
-        <div class="hsub" id="hsub"></div>
+
+      <div class="timer-container">
+        <div class="status-time" id="time">--</div>
+        <div class="status-kicker" id="kicker">next break</div>
       </div>
     </div>
-    <div class="lab">Today's sessions</div>
-    <div class="spark" id="spark"></div>
-    <div class="stats">
-      <div class="stat"><div class="n" id="taken">0</div><div class="l">breaks</div></div>
-      <div class="stat"><div class="n" id="skipped">0</div><div class="l">skipped</div></div>
-      <div class="stat"><div class="n" id="longest">0m</div><div class="l">longest</div></div>
-      <div class="stat"><div class="n" id="streak">0</div><div class="l">streak</div></div>
-    </div>
-    <div class="btns">
-      <button class="primary" onclick="invoke('break_now')">Take a break now</button>
-      <div class="split">
-        <button id="pause" onclick="invoke('toggle_pause')">Pause 1 h</button>
-        <button onclick="invoke('open_settings')">Settings</button>
-      </div>
+    <div class="status-actions" id="statusActions">
+      <button class="quick-btn" id="delay1">+1m</button>
+      <button class="quick-btn" id="delay5">+5m</button>
+      <button class="quick-btn" id="skipNext">skip</button>
     </div>
   </div>
+
+  <div class="menu">
+    <button class="menu-item" id="breakNow">
+      <span class="menu-title">Take Break</span>
+    </button>
+    <button class="menu-item" id="pauseToggle">
+      <span class="menu-title" id="pauseLabel">Pause</span>
+    </button>
+    <button class="menu-item" id="settingsBtn">
+      <span class="menu-title">Studio</span>
+    </button>
+  </div>
+</div>
+
 <script>
-const { invoke } = window.__TAURI__.core;
-const { listen } = window.__TAURI__.event;
-const WORD = { clear:"All clear", accumulating:"Strain building", due:"Break due" };
-const ACC = { clear:["#9eb6a8","rgba(158,182,168,.22)"],
-  accumulating:["#d6b88a","rgba(214,184,138,.22)"],
-  due:["#c98270","rgba(201,130,112,.22)"] };
-const RC = 276.5;
-function render(s) {
-  const [acc, soft] = s.paused ? ["#a2a09c","rgba(162,160,156,.18)"] : (ACC[s.state] || ACC.clear);
-  document.body.style.setProperty("--acc", acc);
-  document.body.style.setProperty("--accSoft", soft);
-  document.getElementById("chip").textContent =
-    s.mode === "smart" ? "smart break" : s.mode;
-  document.getElementById("word").textContent = s.paused ? "Paused" : (WORD[s.state] || "");
-  const m = Math.max(1, Math.round(s.next_in / 60));
-  document.getElementById("rnum").textContent = s.brk ? "—" : m;
-  document.getElementById("rlab").textContent = s.brk ? "break" : "min left";
-  document.getElementById("rprog").style.strokeDashoffset =
-    RC * (s.interval ? Math.max(0, s.next_in) / s.interval : 1);
-  document.getElementById("hsub").textContent =
-    s.paused ? "Breaks are resting. You should too."
-    : s.brk ? "On a break right now."
-    : s.debt > 0 ? `${s.debt} skipped recently — the next one matters more.`
-    : `Next break in about ${m} min.`;
-  const sp = document.getElementById("spark");
-  const ses = (s.day.sessions || []).slice(-16);
-  sp.innerHTML = ses.length === 0
-    ? '<div class="empty">Sessions will appear here as the day unfolds.</div>'
-    : ses.map(([mins, ok]) =>
-        `<div class="bar${ok ? "" : " miss"}" style="height:${4 + Math.min(mins,60)/60*34}px" title="${mins} min"></div>`
-      ).join("");
-  document.getElementById("taken").textContent = s.day.taken;
-  document.getElementById("skipped").textContent = s.day.skipped;
-  document.getElementById("longest").textContent = Math.round(s.day.longest / 60) + "m";
-  document.getElementById("streak").textContent = s.streak;
-  document.getElementById("pause").textContent = s.paused ? "Resume" : "Pause 1 h";
+const invoke = window.__TAURI__?.core?.invoke || (async()=>{});
+const listen = window.__TAURI__?.event?.listen || (async()=>{});
+const $ = id => document.getElementById(id);
+
+// Precision time formatter
+const formatTime = s => {
+  if (s == null) return '--';
+  return s < 60 ? `${s}s` : `${Math.ceil(s/60)}m`;
+};
+
+let isPending = false;
+let isDue = false;
+
+async function render(s) {
+  document.body.dataset.state = s.state || 'clear';
+  document.body.dataset.paused = !!s.paused;
+  if (s.app_theme) {
+    document.documentElement.setAttribute('data-theme', s.app_theme);
+    document.body.setAttribute('data-theme', s.app_theme);
+    document.querySelector('meta[name="color-scheme"]').setAttribute('content', s.app_theme);
+  }
+
+  const paused = !!s.paused;
+  const brk = !!s.brk;
+  isPending = s.state === 'accumulating' || brk;
+  isDue = s.state === 'due';
+
+  if (paused) {
+    $('kicker').textContent = 'timer held';
+    $('kicker').style.color = 'transparent'; // Hide kicker to prevent double text
+    $('time').textContent = 'Paused';
+    $('time').style.fontSize = '24px';
+  } else if (brk) {
+    $('kicker').textContent = 'resting';
+    $('kicker').style.color = 'var(--c-accent)';
+    $('time').textContent = 'Now';
+    $('time').style.fontSize = '24px';
+  } else if (isDue) {
+    $('kicker').textContent = 'overdue';
+    $('kicker').style.color = '#ef4444';
+    $('time').textContent = 'Due';
+    $('time').style.fontSize = '24px';
+  } else {
+    $('kicker').textContent = 'next break';
+    $('kicker').style.color = 'var(--c-ink-faint)';
+    $('time').textContent = formatTime(s.next_in);
+    $('time').style.fontSize = '32px';
+  }
+
+  $('pauseLabel').textContent = paused ? 'Resume' : 'Pause';
+
+  // Update Health Ring using get_recovery_score
+  try {
+    const sessionsCount = (s.day && s.day.sessions) ? s.day.sessions.length : 0;
+    const ring = $('healthRingFg');
+    const text = $('healthText');
+
+    if (sessionsCount === 0) {
+      ring.style.strokeDasharray = '0 63';
+      ring.style.stroke = 'var(--c-rule)';
+      text.textContent = 'awaiting data';
+      text.style.color = 'var(--c-ink-faint)';
+    } else {
+      const score = await invoke('get_recovery_score');
+      // Circumference of r=10 is ~62.8
+      const val = (score / 100) * 62.8;
+      ring.style.strokeDasharray = `${val} 63`;
+
+      let phrase = "healthy";
+      let color = "#4ade80"; // Vibrant Green
+
+      // Tightened Scientific Thresholds
+      if (score < 60) {
+        phrase = "exhausted";
+        color = "#ef4444"; // Vibrant Red
+      } else if (score < 90) {
+        phrase = "needs rest";
+        color = "#fbbf24"; // Vibrant Amber/Orange
+      }
+
+      ring.style.stroke = color;
+      text.textContent = phrase;
+      text.style.color = color;
+    }
+  } catch (e) {
+    console.error("Health update failed", e);
+  }
+
+  $('skipNext').onclick = (e) => { e.stopPropagation(); invoke('skip_break'); };
+
+  // Calculate work done to prevent skip spamming
+  const workDone = (s.interval || 1200) - (s.next_in || 0);
+
+  // Block skip button if the user just took a break or skipped (less than 60s ago)
+  if (workDone < 60 && !s.brk) {
+    $('skipNext').style.opacity = '0.5';
+    $('skipNext').style.pointerEvents = 'none';
+  } else {
+    $('skipNext').style.opacity = '1';
+    $('skipNext').style.pointerEvents = 'auto';
+  }
 }
-listen("snap", e => render(e.payload));
-invoke("snapshot").then(render);
-addEventListener("contextmenu", e => e.preventDefault());
+
+$('delay1').onclick = (e) => { e.stopPropagation(); invoke('delay_break', {secs:60}); };
+$('delay5').onclick = (e) => { e.stopPropagation(); invoke('delay_break', {secs:300}); };
+
+$('breakNow').onclick = () => invoke('break_now');
+$('pauseToggle').onclick = () => invoke('toggle_pause');
+$('settingsBtn').onclick = () => invoke('open_settings');
+
+listen('snap', e => render(e.payload));
+listen('play-sound', e => {
+  try {
+    const { file, volume } = e.payload;
+    if (!file) return;
+    const audio = new Audio(`assets/sounds/${file}`);
+    audio.volume = (volume || 50) / 100.0;
+    audio.play().catch(err => console.error("Audio play error:", err));
+  } catch(e) {}
+});
+
+invoke('snapshot').then(v => render(v)).catch(() => {});
+addEventListener('contextmenu', e => e.preventDefault());
 </script>
-</body></html>
+</body>
+</html>
