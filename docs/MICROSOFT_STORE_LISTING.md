@@ -8,32 +8,35 @@ GazeOff
 
 ## Short description
 
-Quiet eye-break, blink, posture, and screen-recovery reminders for Windows.
+Take better breaks without losing your flow. GazeOff brings quiet eye breaks, blink reminders, posture nudges, and recovery tools to Windows.
 
 ## Description
 
-GazeOff is a quiet Windows tray companion that helps you build healthier screen habits while working, studying, coding, gaming, or spending long hours at your PC.
+Take better breaks without losing your flow.
 
-It reminds you to look away from the screen, blink, reset your posture, and take longer recovery breaks before a long session runs away from you. GazeOff is designed to be helpful without constantly demanding your attention.
+GazeOff is a quiet Windows tray companion for people who work, study, create, and play at a screen. It keeps eye breaks, blink reminders, posture nudges, and longer recovery sessions close without filling your desktop with another distracting app.
 
-Core features:
+A calm timer lives in the system tray. When a break is due, GazeOff gives you a brief, customizable pause. Smart Pause can wait during fullscreen apps, games, video playback, calls, and idle time, so reminders arrive at a better moment.
 
-• Customizable short and long breaks
-• Blink and posture reminders
-• Smart Pause during fullscreen activity, calls, games, videos, and idle time
-• Calm, customizable break screens
-• Tray controls for quick access
-• Local recovery statistics and history
-• No account required
-• No advertising or cloud dashboard
+Start with a balanced default rhythm:
 
-The default rhythm is a 25-second eye break after 20 minutes of activity, with a 3-minute recovery break after four short breaks. Timings, reminders, sounds, and visuals can be adjusted in the app.
+• Work for 20 minutes
+• Look into the distance for 25 seconds
+• Take a 3-minute recovery break after four short breaks
 
-GazeOff is local-first. Settings, break history, and recovery statistics remain on your device. Local Windows activity signals are used only to decide when a reminder should wait. GazeOff does not record audio or video, capture your screen, or upload your activity to a cloud dashboard.
+Make it yours:
+
+• Customize short and long break timing
+• Turn blink and posture reminders on or off
+• Choose calm break screens, sounds, and reminder positions
+• Pause or start a break from the Windows system tray
+• Review local recovery statistics and seven-day history
+
+Your activity stays yours. GazeOff requires no account, has no advertising, and has no cloud dashboard. Settings, break history, and recovery statistics stay on your device. GazeOff does not record audio or video, capture your screen, or upload your activity.
 
 GazeOff is a general wellness and productivity tool. It is not a medical device and does not provide medical advice.
 
-Questions, bug reports, and feature requests are welcome through GitHub Issues or mr.imcommon@gmail.com.
+Need help or have an idea? Visit https://github.com/MDSD0/GazeOff/issues or email mr.imcommon@gmail.com.
 
 ## What's new in this version
 
@@ -47,13 +50,13 @@ For the next update, use:
 
 Enter these as separate feature rows:
 
-1. Customizable short and long eye breaks
-2. Blink and posture reminders
-3. Smart Pause for fullscreen activity, calls, games, videos, and idle time
-4. Calm, customizable break screens
-5. Local recovery statistics and history
-6. Quick controls from the Windows system tray
-7. Local-first design with no account or cloud dashboard
+1. Take better breaks without losing your flow
+2. Quiet blink and posture reminders
+3. Smart Pause waits during calls, games, videos, fullscreen apps, and idle time
+4. Calm break screens with adjustable timing, sounds, and visuals
+5. Local recovery statistics and seven-day history
+6. Fast controls from the Windows system tray
+7. No account, advertising, or cloud dashboard
 
 ## Keywords
 
