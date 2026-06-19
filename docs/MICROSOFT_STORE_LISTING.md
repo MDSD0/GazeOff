@@ -99,7 +99,7 @@ Use the GazeOff blob—not an eye—as the Store identity. Start from `icons/tra
 - Select **English (United States)** and complete that listing.
 - The description and at least one screenshot are required; Microsoft recommends four or more screenshots and permits up to ten.
 - Use the same product name as the installed app: **GazeOff**.
-- Submit the x64 MSI at https://gazeoff.vercel.app/downloads/v0.1.4/GazeOff-windows-x64.msi.
+- Submit the x64 MSI using its direct, non-redirecting CDN URL: https://z4gs7ictipejmynu.public.blob.vercel-storage.com/downloads/v0.1.4/GazeOff-windows-x64-FVV0a8lCJMyFbyZvdore5X19maBbyu.msi
 - Select app type **MSI**, architecture **x64**, and language **English**. Partner Center supplies the standard `/qn` silent switch for MSI packages.
 - The website installer is available at https://gazeoff.vercel.app/downloads/v0.1.4/GazeOff-windows-x64-setup.exe and supports silent installation with `/S`.
 - Do not submit both v0.1.4 installers for the same x64 architecture. Microsoft uses multiple packages to choose between architectures.

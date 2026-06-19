@@ -3,7 +3,7 @@
   "redirects": [
     {
       "source": "/downloads/v0.1.4/GazeOff-windows-x64.msi",
-      "destination": "https://github.com/MDSD0/GazeOff/releases/download/v0.1.4/GazeOff-windows-x64.msi",
+      "destination": "https://z4gs7ictipejmynu.public.blob.vercel-storage.com/downloads/v0.1.4/GazeOff-windows-x64-FVV0a8lCJMyFbyZvdore5X19maBbyu.msi",
       "permanent": false
     },
     {
