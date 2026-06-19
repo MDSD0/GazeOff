@@ -8,7 +8,7 @@
     },
     {
       "source": "/downloads/v0.1.4/GazeOff-windows-x64-setup.exe",
-      "destination": "https://github.com/MDSD0/GazeOff/releases/download/v0.1.4/GazeOff-windows-x64-setup.exe",
+      "destination": "https://z4gs7ictipejmynu.public.blob.vercel-storage.com/downloads/v0.1.4/GazeOff-windows-x64-setup.exe",
       "permanent": false
     }
   ],
