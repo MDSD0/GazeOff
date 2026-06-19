@@ -99,14 +99,15 @@ Use the GazeOff blob—not an eye—as the Store identity. Start from `icons/tra
 - Select **English (United States)** and complete that listing.
 - The description and at least one screenshot are required; Microsoft recommends four or more screenshots and permits up to ten.
 - Use the same product name as the installed app: **GazeOff**.
-- Recommended Partner Center package: https://z4gs7ictipejmynu.public.blob.vercel-storage.com/downloads/v0.1.4/GazeOff-windows-x64-setup.exe
-- Select app type **EXE**, architecture **x64**, and language **English**. Enter `/S` as the silent installer parameter.
-- The MSI remains available as an alternative at https://z4gs7ictipejmynu.public.blob.vercel-storage.com/downloads/v0.1.4/GazeOff-windows-x64-FVV0a8lCJMyFbyZvdore5X19maBbyu.msi and uses `/qn /norestart`.
-- Do not submit both v0.1.4 installers for the same x64 architecture. Microsoft uses multiple packages to choose between architectures.
-- Because the current executable is unsigned, complete package validation and certification notes honestly. Do not instruct customers to disable Windows security protections.
+- Upload `GazeOff_1.0.4.0_x64.msix` directly to the MSIX product in Partner Center.
+- Store identity: `Zefyrus.GazeOff`, publisher `CN=BF7FA1EC-A851-4489-839E-4802952A71DB`, publisher display name `Zefyrus`.
+- Package family name: `Zefyrus.GazeOff_55fthz64p9jg2`.
+- Package version: `1.0.4.0`; architecture: `x64`; language: `en-us`.
+- The development signature is intentionally self-signed. Microsoft Store replaces it with a Microsoft certificate after certification.
+- Keep the NSIS EXE as the separate website download. Do not upload the unsigned EXE or MSI to the MSIX submission.
 
 ## Official Microsoft guidance
 
-- [Create an MSI/EXE app submission](https://learn.microsoft.com/en-us/windows/apps/publish/publish-your-app/msi/create-app-submission)
-- [Add and edit MSI/EXE Store listing information](https://learn.microsoft.com/en-us/windows/apps/publish/publish-your-app/msi/add-and-edit-store-listing-info)
-- [MSI/EXE screenshots and images](https://learn.microsoft.com/en-us/windows/apps/publish/publish-your-app/msi/screenshots-and-images)
+- [Use winapp CLI with Tauri](https://learn.microsoft.com/en-us/windows/apps/dev-tools/winapp-cli/guides/tauri)
+- [MSIX package requirements](https://learn.microsoft.com/en-us/windows/apps/publish/publish-your-app/msix/app-package-requirements)
+- [Code-signing options](https://learn.microsoft.com/en-us/windows/apps/package-and-deploy/code-signing-options)

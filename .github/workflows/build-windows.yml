@@ -18,8 +18,28 @@ jobs:
       - name: Test
         run: cargo test
 
+      - name: Build clean release executable
+        run: cargo build --release
+
+      - name: Stage MSIX layout
+        shell: pwsh
+        run: |
+          New-Item -ItemType Directory -Force target\msix-layout | Out-Null
+          Copy-Item target\release\gazeoff.exe target\msix-layout\GazeOff.exe
+
       - name: Build installers
         run: cargo tauri build --bundles msi,nsis
+
+      - name: Install Windows App Development CLI
+        shell: pwsh
+        run: winget install Microsoft.WinAppCli --source winget --accept-source-agreements --accept-package-agreements --silent --disable-interactivity
+
+      - name: Build Microsoft Store MSIX
+        shell: pwsh
+        run: |
+          $winapp = "$env:LOCALAPPDATA\Microsoft\WindowsApps\winapp.exe"
+          & $winapp cert generate --manifest packaging\msix\Package.appxmanifest --output target\msix-devcert.pfx --if-exists Overwrite
+          & $winapp package target\msix-layout --manifest packaging\msix\Package.appxmanifest --cert target\msix-devcert.pfx --cert-password password --output GazeOff_1.0.4.0_x64.msix --exe GazeOff.exe
 
       - name: Stage installers
         shell: pwsh
@@ -34,4 +54,5 @@ jobs:
           path: |
             GazeOff-windows-x64.msi
             GazeOff-windows-x64-setup.exe
+            GazeOff_1.0.4.0_x64.msix
           if-no-files-found: error
