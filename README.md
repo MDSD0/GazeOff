@@ -12,7 +12,7 @@
   <p>
     <a href="https://gazeoff.vercel.app"><strong>Website</strong></a>
     ·
-    <a href="https://gazeoff.vercel.app/downloads/v0.1.3/GazeOff-windows-x64.exe"><strong>Download</strong></a>
+    <a href="https://gazeoff.vercel.app/downloads/v0.1.4/GazeOff-windows-x64-setup.exe"><strong>Download</strong></a>
     ·
     <a href="docs/FEATURE_CATALOG.md"><strong>Feature catalog</strong></a>
   </p>
@@ -91,7 +91,7 @@ These signals are processed on-device. GazeOff has no account system, analytics 
 
 ## Install
 
-Download the [Windows v0.1.3 build directly](https://gazeoff.vercel.app/downloads/v0.1.3/GazeOff-windows-x64.exe), run `GazeOff-windows-x64.exe`, and find GazeOff in the system tray.
+Download the [Windows v0.1.4 installer directly](https://gazeoff.vercel.app/downloads/v0.1.4/GazeOff-windows-x64-setup.exe), run `GazeOff-windows-x64-setup.exe`, and find GazeOff in the system tray.
 
 > **Windows security note:** GazeOff is not yet code-signed. Windows SmartScreen may offer **More info → Run anyway**. Windows 11 **Smart App Control** is a different protection layer and may block unsigned apps without a per-app bypass. We do not recommend disabling system-wide protection just for GazeOff. See [Microsoft’s Smart App Control guidance](https://support.microsoft.com/en-us/windows/smart-app-control-frequently-asked-questions-285ea03d-fa88-4d56-882e-6698afdb7003).
 
@@ -123,10 +123,10 @@ The interface is vanilla HTML, CSS, and JavaScript hosted inside Tauri v2. Nativ
 <details>
 <summary><strong>Build and release notes</strong></summary>
 
-The release artifact is built with Cargo's optimized release profile. Every GitHub Release includes a SHA-256 checksum so the downloaded executable can be verified with:
+The release artifacts are built with Cargo's optimized release profile. Every GitHub Release includes SHA-256 checksums so a downloaded installer can be verified with:
 
 ```powershell
-Get-FileHash .\gazeoff.exe -Algorithm SHA256
+Get-FileHash .\GazeOff-windows-x64-setup.exe -Algorithm SHA256
 ```
 
 Public code signing is not yet configured. SmartScreen may allow a manual confirmation; Smart App Control may block the unsigned executable entirely.

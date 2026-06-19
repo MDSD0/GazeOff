@@ -1,5 +1,17 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
+  "redirects": [
+    {
+      "source": "/downloads/v0.1.4/GazeOff-windows-x64.msi",
+      "destination": "https://github.com/MDSD0/GazeOff/releases/download/v0.1.4/GazeOff-windows-x64.msi",
+      "permanent": false
+    },
+    {
+      "source": "/downloads/v0.1.4/GazeOff-windows-x64-setup.exe",
+      "destination": "https://github.com/MDSD0/GazeOff/releases/download/v0.1.4/GazeOff-windows-x64-setup.exe",
+      "permanent": false
+    }
+  ],
   "headers": [
     {
       "source": "/downloads/v0.1.3/GazeOff-windows-x64.exe",

@@ -18,15 +18,20 @@ jobs:
       - name: Test
         run: cargo test
 
-      - name: Build release
-        run: cargo build --release
+      - name: Build installers
+        run: cargo tauri build --bundles msi,nsis
 
-      - name: Stage executable
-        run: Copy-Item target\release\gazeoff.exe GazeOff-windows-x64.exe
+      - name: Stage installers
+        shell: pwsh
+        run: |
+          Copy-Item (Get-ChildItem target\release\bundle\msi\*.msi | Select-Object -First 1) GazeOff-windows-x64.msi
+          Copy-Item (Get-ChildItem target\release\bundle\nsis\*-setup.exe | Select-Object -First 1) GazeOff-windows-x64-setup.exe
 
-      - name: Upload executable
+      - name: Upload installers
         uses: actions/upload-artifact@v4
         with:
-          name: GazeOff-windows-x64
-          path: GazeOff-windows-x64.exe
+          name: GazeOff-windows-x64-installers
+          path: |
+            GazeOff-windows-x64.msi
+            GazeOff-windows-x64-setup.exe
           if-no-files-found: error
