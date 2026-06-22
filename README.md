@@ -10,7 +10,7 @@
     <img alt="Built with Rust" src="https://img.shields.io/badge/built%20with-Rust-bb6b3d?style=flat-square">
   </p>
   <p>
-    <a href="https://gazeoff.vercel.app"><strong>Website</strong></a>
+    <a href="https://gazeoff.com"><strong>Website</strong></a>
     ·
     <a href="https://apps.microsoft.com/detail/9NRL1Z4MQTD8"><strong>Microsoft Store</strong></a>
     ·
@@ -146,10 +146,10 @@ capabilities/        Tauri permission configuration
 
 ## Links
 
-- [GazeOff website](https://gazeoff.vercel.app)
+- [GazeOff website](https://gazeoff.com)
 - [Source code](https://github.com/MDSD0/GazeOff)
 - [Latest release](https://github.com/MDSD0/GazeOff/releases/latest)
-- [Privacy policy](https://gazeoff.vercel.app/privacy/)
+- [Privacy policy](https://gazeoff.com/privacy)
 - [Complete feature catalog](docs/FEATURE_CATALOG.md)
 - [Publishing checklist](docs/PUBLISHING_CHECKLIST.md)
 - [Microsoft Store listing kit](docs/MICROSOFT_STORE_LISTING.md)

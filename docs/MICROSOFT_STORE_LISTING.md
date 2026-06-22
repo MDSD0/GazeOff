@@ -74,9 +74,9 @@ Partner Center permits at most 7 keyword terms, 40 characters per term, and 21 u
 
 ## URLs
 
-- Website URL: https://gazeoff.vercel.app/
+- Website URL: https://gazeoff.com/
 - Support URL: https://github.com/MDSD0/GazeOff/issues
-- Privacy policy URL: https://gazeoff.vercel.app/privacy
+- Privacy policy URL: https://gazeoff.com/privacy
 
 ## Screenshots
 
