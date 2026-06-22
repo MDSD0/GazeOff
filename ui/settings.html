@@ -595,7 +595,7 @@
 
         <div class="group-title" style="margin-top: 32px;">Idle Time Detection</div>
         <div class="row">
-          <div class="label">Pause timer when away for</div>
+          <div class="label">Pause timer after inactivity</div>
           <select id="idle_pause">
             <option value="60">1 min</option>
             <option value="120">2 min</option>
@@ -603,7 +603,7 @@
           </select>
         </div>
         <div class="row">
-          <div class="label">Reset break interval when away for</div>
+          <div class="label">Automatically count an away break after</div>
           <select id="idle_reset">
             <option value="180">3 min</option>
             <option value="300">5 min</option>
@@ -909,13 +909,6 @@
         </div>
         <div class="row">
           <div class="label">
-            AFK return prompt
-            <div class="hint">Shows the took-a-break or still-staring prompt.</div>
-          </div>
-          <button class="preview-btn" id="test_afk_prompt" type="button">Test</button>
-        </div>
-        <div class="row">
-          <div class="label">
             Break overlay
             <div class="hint">Starts a real break now so you can test skip, delay, and screen darkening.</div>
           </div>
@@ -1124,7 +1117,6 @@ function wire() {
   $('preview_posture').onclick = e => { e.preventDefault(); e.stopPropagation(); invoke('test_nudge', { kind: 'posture' }); };
   $('test_prebreak_cursor').onclick = e => { e.preventDefault(); e.stopPropagation(); invoke('test_prebreak_sequence'); };
   $('test_debt_nudge').onclick = e => { e.preventDefault(); e.stopPropagation(); invoke('test_nudge', { kind: 'debt' }); };
-  $('test_afk_prompt').onclick = e => { e.preventDefault(); e.stopPropagation(); invoke('test_afk_prompt'); };
   $('test_break_overlay').onclick = e => { e.preventDefault(); e.stopPropagation(); invoke('break_now'); };
   $('contact_issues').onclick = () => invoke('open_contact', { kind: 'issues' });
   $('contact_email').onclick = () => invoke('open_contact', { kind: 'email' });

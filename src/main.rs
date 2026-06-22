@@ -4,7 +4,7 @@
 use image::imageops::FilterType;
 use serde::{Deserialize, Serialize};
 use serde_json::{json, Value};
-use std::sync::atomic::{AtomicBool, Ordering};
+use std::sync::atomic::{AtomicBool, AtomicU64, Ordering};
 use std::sync::{Arc, Mutex, OnceLock};
 use tauri::{
     image::Image,
@@ -725,6 +725,22 @@ fn set_autostart(on: bool) {
 // monitor with the lid shut, the display stays on, so the app keeps running -
 // which is correct, because the user is still working.
 static DISPLAY_OFF: AtomicBool = AtomicBool::new(false);
+static DISPLAY_OFF_SINCE: AtomicU64 = AtomicU64::new(0);
+static DISPLAY_AWAY_SECS: AtomicU64 = AtomicU64::new(0);
+
+fn mark_display_off() {
+    if !DISPLAY_OFF.swap(true, Ordering::Relaxed) {
+        DISPLAY_OFF_SINCE.store(now_epoch(), Ordering::Relaxed);
+    }
+}
+
+fn mark_display_on() {
+    let was_off = DISPLAY_OFF.swap(false, Ordering::Relaxed);
+    let since = DISPLAY_OFF_SINCE.swap(0, Ordering::Relaxed);
+    if was_off && since > 0 {
+        DISPLAY_AWAY_SECS.fetch_max(now_epoch().saturating_sub(since), Ordering::Relaxed);
+    }
+}
 
 #[cfg(windows)]
 unsafe extern "system" fn power_wnd_proc(
@@ -734,15 +750,28 @@ unsafe extern "system" fn power_wnd_proc(
     lparam: windows_sys::Win32::Foundation::LPARAM,
 ) -> windows_sys::Win32::Foundation::LRESULT {
     use windows_sys::Win32::System::Power::POWERBROADCAST_SETTING;
-    use windows_sys::Win32::UI::WindowsAndMessaging::{
-        DefWindowProcW, PBT_POWERSETTINGCHANGE, WM_POWERBROADCAST,
-    };
-    if msg == WM_POWERBROADCAST && wparam as u32 == PBT_POWERSETTINGCHANGE && lparam != 0 {
-        // We only register for GUID_CONSOLE_DISPLAY_STATE, so any setting change
-        // delivered here is the display state. Data[0]: 0 = off, 1 = on, 2 = dim.
-        let setting = &*(lparam as *const POWERBROADCAST_SETTING);
-        DISPLAY_OFF.store(setting.Data[0] == 0, Ordering::Relaxed);
-        return 0;
+    use windows_sys::Win32::UI::WindowsAndMessaging::{DefWindowProcW, WM_POWERBROADCAST};
+    const PBT_APMSUSPEND: u32 = 0x0004;
+    const PBT_APMRESUMESUSPEND: u32 = 0x0007;
+    const PBT_APMRESUMEAUTOMATIC: u32 = 0x0012;
+    const PBT_POWERSETTINGCHANGE: u32 = 0x8013;
+    if msg == WM_POWERBROADCAST {
+        match wparam as u32 {
+            PBT_APMSUSPEND => mark_display_off(),
+            PBT_APMRESUMESUSPEND | PBT_APMRESUMEAUTOMATIC => mark_display_on(),
+            PBT_POWERSETTINGCHANGE if lparam != 0 => {
+                // We only register for GUID_CONSOLE_DISPLAY_STATE. Data[0]:
+                // 0 = off, 1 = on, 2 = dim.
+                let setting = &*(lparam as *const POWERBROADCAST_SETTING);
+                if setting.Data[0] == 0 {
+                    mark_display_off();
+                } else {
+                    mark_display_on();
+                }
+            }
+            _ => {}
+        }
+        return 1;
     }
     DefWindowProcW(hwnd, msg, wparam, lparam)
 }
@@ -926,8 +955,31 @@ fn afk_should_arm(idle: u64, reset_after: u32) -> bool {
     idle >= reset_after.max(120) as u64
 }
 
-fn afk_should_prompt(idle: u64, pause_after: u32, ready: bool, showing: bool) -> bool {
-    idle < pause_after.max(15) as u64 && ready && !showing
+fn complete_away_break(e: &mut Engine, away_secs: u32) {
+    let counted_secs = e.s.idle_reset.max(60).min(away_secs);
+    if e.unbroken_work >= 60 {
+        let session_mins = e.unbroken_work / 60;
+        e.day.sessions.push((session_mins, true));
+        if e.day.sessions.len() > 48 {
+            e.day.sessions.remove(0);
+        }
+        e.day.taken += 1;
+        e.day.break_secs += counted_secs;
+    }
+    e.work = 0;
+    e.unbroken_work = 0;
+    e.debt = 0;
+    e.debt_nudged_at = 0;
+    e.pending = false;
+    e.pending_since = 0;
+    e.warned = false;
+    e.heads_up = false;
+    e.heads_up_until = 0;
+    e.blink_t = 0;
+    e.post_t = 0;
+    e.afk_ready = true;
+    e.afk_prompt_showing = false;
+    e.afk_idle_secs = away_secs;
 }
 
 fn countdown_remaining(now: u64, until: u64) -> u32 {
@@ -2109,12 +2161,41 @@ fn main() {
                             }
                         }
                         archive_day(&mut e, date);
+                        // A new day never inherits yesterday's timer or an
+                        // overnight away classification. The first real input
+                        // after resume starts a clean work session.
+                        e.work = 0;
+                        e.unbroken_work = 0;
+                        e.blink_t = 0;
+                        e.post_t = 0;
+                        e.pending = false;
+                        e.pending_since = 0;
+                        e.warned = false;
+                        e.heads_up = false;
+                        e.heads_up_until = 0;
+                        e.afk_ready = true;
+                        e.afk_prompt_showing = false;
+                        e.afk_idle_secs = 0;
                         e.debt = 0;
                         e.debt_nudged_at = 0;
                         save(&handle, &e);
                     }
 
                     let display_off = DISPLAY_OFF.load(Ordering::Relaxed);
+                    let display_away_secs = if display_off {
+                        now.saturating_sub(DISPLAY_OFF_SINCE.load(Ordering::Relaxed))
+                    } else {
+                        DISPLAY_AWAY_SECS.swap(0, Ordering::Relaxed)
+                    };
+                    if afk_should_arm(display_away_secs, e.s.idle_reset) && !e.afk_ready {
+                        complete_away_break(
+                            &mut e,
+                            display_away_secs.min(u32::MAX as u64) as u32,
+                        );
+                        hide(&handle, "afk_prompt");
+                        hide(&handle, "nudge");
+                        save(&handle, &e);
+                    }
                     let day_off = e.s.days & (1u8 << wday.min(6)) == 0;
                     let off_hours = day_off
                         || (e.s.hours_start < e.s.hours_end
@@ -2212,45 +2293,24 @@ fn main() {
                             last_idle_state = is_idle;
 
                             if afk_should_arm(idle, e.s.idle_reset) {
-                                e.afk_ready = true;
-                                e.afk_idle_secs = idle.min(u32::MAX as u64) as u32;
+                                if !e.afk_ready {
+                                    complete_away_break(
+                                        &mut e,
+                                        idle.min(u32::MAX as u64) as u32,
+                                    );
+                                    hide(&handle, "afk_prompt");
+                                    save(&handle, &e);
+                                }
                                 if e.heads_up {
                                     e.heads_up = false;
                                     e.heads_up_until = 0;
                                     hide(&handle, "nudge");
-                                }
-                            } else if afk_should_prompt(
-                                idle,
-                                e.s.idle_pause,
-                                e.afk_ready,
-                                e.afk_prompt_showing,
-                            ) {
-                                e.afk_prompt_showing = true;
-                                e.afk_ready = false;
-                                e.pending = false;
-                                e.pending_since = 0;
-                                e.warned = false;
-                                if e.heads_up {
-                                    e.heads_up = false;
-                                    e.heads_up_until = 0;
-                                    hide(&handle, "nudge");
-                                }
-                                place_afk_prompt(&handle, e.s.alert_position.as_str());
-                                let _ = handle.emit(
-                                    "afk-prompt",
-                                    json!({
-                                        "idle_secs": e.afk_idle_secs,
-                                        "work_mins": e.unbroken_work / 60,
-                                        "app_theme": e.s.app_theme.clone(),
-                                    }),
-                                );
-                                if let Some(w) = handle.get_webview_window("afk_prompt") {
-                                    let _ = w.show();
-                                    let _ = w.set_focus();
                                 }
                             } else if e.afk_prompt_showing {
-                                // Wait for the user to classify the away period.
+                                // The prompt is only used by the explicit preview in
+                                // Advanced settings. Normal away periods are automatic.
                             } else if idle < e.s.idle_pause.max(15) as u64 {
+                                e.afk_ready = false;
                                 e.work += 1;
                                 e.unbroken_work += 1;
                                 e.blink_t += 1;
@@ -2528,9 +2588,6 @@ mod tests {
     fn afk_prebreak_and_typing_thresholds_are_exact() {
         assert!(!afk_should_arm(299, 300));
         assert!(afk_should_arm(300, 300));
-        assert!(!afk_should_prompt(120, 120, true, false));
-        assert!(afk_should_prompt(0, 120, true, false));
-        assert!(!afk_should_prompt(0, 120, true, true));
 
         assert_eq!(countdown_remaining(100, 105), 5);
         assert_eq!(countdown_remaining(104, 105), 1);
@@ -2557,6 +2614,30 @@ mod tests {
         assert!(pending_break_ready(1_200, 1_200, 0, 120, 100, false));
         assert!(!pending_break_ready(1_200, 1_200, 0, 119, 100, false));
         assert!(pending_break_ready(1_200, 1_200, 0, 220, 100, true));
+    }
+
+    #[test]
+    fn five_minutes_away_automatically_completes_one_break() {
+        let mut engine = Engine {
+            work: 18 * 60,
+            unbroken_work: 18 * 60,
+            debt: 2,
+            pending: true,
+            heads_up: true,
+            ..Engine::default()
+        };
+
+        complete_away_break(&mut engine, 8 * 60);
+
+        assert_eq!(engine.day.taken, 1);
+        assert_eq!(engine.day.break_secs, 5 * 60);
+        assert_eq!(engine.work, 0);
+        assert_eq!(engine.unbroken_work, 0);
+        assert_eq!(engine.debt, 0);
+        assert!(!engine.pending);
+        assert!(!engine.heads_up);
+        assert!(engine.afk_ready);
+        assert!(!engine.afk_prompt_showing);
     }
 
     #[test]
