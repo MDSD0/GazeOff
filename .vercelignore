@@ -1,0 +1,14 @@
+target/
+.git/
+.github/
+icons/
+packaging/
+scripts/
+src/
+store-assets/
+ui/
+Cargo.lock
+Cargo.toml
+README.md
+build.rs
+tauri.conf.json
