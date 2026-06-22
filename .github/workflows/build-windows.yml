@@ -39,7 +39,7 @@ jobs:
         run: |
           $winapp = "$env:LOCALAPPDATA\Microsoft\WindowsApps\winapp.exe"
           & $winapp cert generate --manifest packaging\msix\Package.appxmanifest --output target\msix-devcert.pfx --if-exists Overwrite
-          & $winapp package target\msix-layout --manifest packaging\msix\Package.appxmanifest --cert target\msix-devcert.pfx --cert-password password --output GazeOff_1.0.4.0_x64.msix --exe GazeOff.exe
+          & $winapp package target\msix-layout --manifest packaging\msix\Package.appxmanifest --cert target\msix-devcert.pfx --cert-password password --output GazeOff_1.0.5.0_x64.msix --exe GazeOff.exe
 
       - name: Stage installers
         shell: pwsh
@@ -54,5 +54,5 @@ jobs:
           path: |
             GazeOff-windows-x64.msi
             GazeOff-windows-x64-setup.exe
-            GazeOff_1.0.4.0_x64.msix
+            GazeOff_1.0.5.0_x64.msix
           if-no-files-found: error

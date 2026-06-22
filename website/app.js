@@ -53,3 +53,9 @@ document.querySelector('#startReset')?.addEventListener('click',()=>{
 const hoursRange=document.querySelector('#screenHours');
 function updateScreenMath(){const hours=Number(hoursRange.value);const cycles=Math.floor(hours*60/20);const longBreaks=Math.floor(cycles/5);const shortBreaks=cycles-longBreaks;const recoveryMinutes=Math.round((longBreaks*180+shortBreaks*25)/60);document.querySelector('#hoursOutput').textContent=`${hours} hour${hours===1?'':'s'}`;document.querySelector('#breakOutput').textContent=cycles;document.querySelector('#recoveryOutput').textContent=`${recoveryMinutes} min`}
 hoursRange?.addEventListener('input',updateScreenMath);updateScreenMath();
+
+document.querySelectorAll('[data-analytics]').forEach(link=>{
+  link.addEventListener('click',()=>{
+    window.va?.('event','GazeOff link clicked',{placement:link.dataset.analytics});
+  });
+});

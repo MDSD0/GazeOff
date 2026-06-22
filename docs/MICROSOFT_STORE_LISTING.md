@@ -1,6 +1,6 @@
 # Microsoft Store Listing — English (United States)
 
-This copy is prepared for the first Microsoft Store submission of GazeOff v0.1.4.
+This copy is prepared for the Microsoft Store submission of GazeOff v0.1.5.
 
 ## Product name
 
@@ -11,6 +11,8 @@ GazeOff
 Take better breaks without losing your flow. GazeOff brings quiet eye breaks, blink reminders, posture nudges, and recovery tools to Windows.
 
 ## Description
+
+Requires Microsoft Visual C++ runtime components.
 
 Take better breaks without losing your flow.
 
@@ -99,10 +101,10 @@ Use the GazeOff blob—not an eye—as the Store identity. Start from `icons/tra
 - Select **English (United States)** and complete that listing.
 - The description and at least one screenshot are required; Microsoft recommends four or more screenshots and permits up to ten.
 - Use the same product name as the installed app: **GazeOff**.
-- Upload `GazeOff_1.0.4.0_x64.msix` directly to the MSIX product in Partner Center.
+- Upload `GazeOff_1.0.5.0_x64.msix` directly to the MSIX product in Partner Center.
 - Store identity: `Zefyrus.GazeOff`, publisher `CN=BF7FA1EC-A851-4489-839E-4802952A71DB`, publisher display name `Zefyrus`.
 - Package family name: `Zefyrus.GazeOff_55fthz64p9jg2`.
-- Package version: `1.0.4.0`; architecture: `x64`; language: `en-us`.
+- Package version: `1.0.5.0`; architecture: `x64`; language: `en-us`.
 - The development signature is intentionally self-signed. Microsoft Store replaces it with a Microsoft certificate after certification.
 - Keep the NSIS EXE as the separate website download. Do not upload the unsigned EXE or MSI to the MSIX submission.
 

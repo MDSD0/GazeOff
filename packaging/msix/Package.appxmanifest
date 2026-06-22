@@ -14,7 +14,7 @@
   <Identity
     Name="Zefyrus.GazeOff"
     Publisher="CN=BF7FA1EC-A851-4489-839E-4802952A71DB"
-    Version="1.0.4.0"
+    Version="1.0.5.0"
     ProcessorArchitecture="x64" />
 
   <Properties>

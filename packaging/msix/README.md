@@ -9,7 +9,7 @@ This package definition is associated with the GazeOff MSIX product in Partner C
 - Publisher display name: `Zefyrus`
 - Package family name: `Zefyrus.GazeOff_55fthz64p9jg2`
 - Store ID: `9NRL1Z4MQTD8`
-- Version: `1.0.4.0`
+- Version: `1.0.5.0`
 - Architecture: `x64`
 
 ## Build
@@ -30,7 +30,7 @@ winapp package target\msix-layout `
   --manifest packaging\msix\Package.appxmanifest `
   --cert target\msix-devcert.pfx `
   --cert-password password `
-  --output target\release-assets\v0.1.4\GazeOff_1.0.4.0_x64.msix `
+  --output target\release-assets\v0.1.5\GazeOff_1.0.5.0_x64.msix `
   --exe GazeOff.exe
 ```
 
